@@ -1,0 +1,65 @@
+@font-face {
+    font-family: MISA Font Reg;
+    src: url(../assets/fonts/notosans-regular.2cb88a13.woff2);
+}
+
+@font-face {
+    font-family: MISA Font Bold-font;
+    src: url(../assets/fonts/notosans-bold.3ede5aff.woff2);
+}
+
+@font-face {
+    font-family: MISA Font Semi-bold-font;
+    src: url(../assets/fonts/notosans-semibold.df3e6dc4.woff2);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Tahoma;
+}
+
+.rotate {
+    transition: 0.5s ease;
+    transform: rotate(180deg);
+}
+
+::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #b8bcc3;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+@keyframes dropdown {
+    from {
+        transform: translateY(-100%);
+        opacity: 0;
+        height: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+        height: 100%;
+    }
+}
+
+@keyframes go-up {
+    from {
+        transform: translateY(100%);
+        opacity: 0;
+        height: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+        height: 100%;
+    }
+}
