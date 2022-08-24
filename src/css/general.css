@@ -40,26 +40,22 @@
 
 @keyframes dropdown {
     from {
-        transform: translateY(-100%);
+        transform: translateY(23px);
         opacity: 0;
-        height: 0;
     }
     to {
         transform: translateY(0);
         opacity: 1;
-        height: 100%;
     }
 }
 
 @keyframes go-up {
     from {
-        transform: translateY(100%);
+        transform: translateY(23px);
         opacity: 0;
-        height: 0;
     }
     to {
         transform: translateY(0);
         opacity: 1;
-        height: 100%;
     }
 }

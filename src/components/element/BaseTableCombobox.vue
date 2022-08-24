@@ -1,12 +1,12 @@
 <template>
-    <ul :class="{'dropdown-form' : isDropdownForm}">
+    <ul :class="{'dropdown-form' : isDropdownForm}" :style="{top: rectCalculate.y + 'px', left: rectCalculate.x + 'px'}">
         <li class="header">
             <div class="header header-name">Sở thích</div>
             <div class="header header-fee">Thu thêm</div>
         </li>
         <li v-for="(option,index) in this.options" :key="index"  
         :class="{'chose': isComboboxSelected[index]}" 
-        @click="selectCombobox(option, index)">
+        @click="(e) => selectCombobox(e, option, index)">
             <div class="content hobby-name">{{option.FoodHobbyName}}</div>
             <div class="content hobby-fee">{{option.FoodHobbyFee}}</div>
         </li>
@@ -42,25 +42,22 @@ export default {
         options: Array,
         inputValue: Object,
         indexSelected: Number,
-        isShow: Boolean
+        isShow: Boolean,
+        rectCalculate: Object
     },
 
     methods:{
         //Chọn option
         // Ngày sửa: 1/8/2022
         // Người sửa: NMDUC
-        selectCombobox(option,index){
-            this.$emit('toggleCombobox', this.indexSelected)
+        selectCombobox(e, option,index){
+            this.$emit('toggleCombobox',e , this.indexSelected)
             this.$emit(`setInputValue`, this.indexSelected, option)
             for(let i = 0; i < this.options.length; i++){
               this.isComboboxSelected[i] = false
             }
             this.isComboboxSelected[index] = true
         },
-
-        onCLickOutside(){
-            
-        }
     },
 
     data(){
@@ -73,10 +70,10 @@ export default {
 
 <style scoped>
   ul {
-      position: absolute;
+      position: fixed;
       max-height: 150px;
       overflow: auto;
-      width: 70%;
+      width: 400px;
       top: 24px;
       z-index: 1;
       transition: 0.25s ease;

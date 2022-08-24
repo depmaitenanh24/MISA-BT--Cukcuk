@@ -1,5 +1,10 @@
 <template>
 <div class="table-section">
+    <modal-success
+    :isUpdateError="isUpdateError"
+    :isConfirmModal="isConfirmModal"
+    :successMsg="successMsg"
+    />
     <div class="tool-bar">
         <tool-bar-button btnText = "Thêm" @click="onClickAddButton()">
             <template #icon>
@@ -55,7 +60,7 @@
                             </template>
                         </input-icon>
                     </th>
-                    <th>Mã món
+                    <th style="min-width: 200px">Mã món
                         <input-icon 
                         :icon = "'describe-icon'"
                         @setInputValue = "setCodeFilterInputValue"
@@ -233,6 +238,10 @@
     @setFormState = "setFormState"
     @sendFood="sendFood"
     @updateFood="updateFood"
+    @setEditMode="setEditMode"
+    @setIsLoading="setIsLoading"
+    @showSuccessModal="showSuccessModal"
+    @showErrorModal="showErrorModal"
     />
 
     <modal-alert 
@@ -260,12 +269,17 @@ import FoodDetails from "./FoodDetails.vue";
 import LoadingScreen from "./LoadingScreen.vue";
 import ModalAlert from "./ModalAlert.vue";
 import DButton from "../element/DButton.vue";
+import ModalSuccess from "../element/ModalSuccess.vue";
+import SuccessMsg from "../../js/Resources/SuccessMsg";
 import axios from "axios";
 export default {
     async created(){
         this.callPagingAPI()
     },
 
+    //Mỗi khi currentPage thay đổi, check xem nó có phải đang ở trang đầu hoặc cuối không
+    // Ngày sửa: 9/8/2022
+    // Người sửa: NMDUC
     watch: {
         currentPage: function(){
             if (this.currentPage === 1) {
@@ -283,14 +297,15 @@ export default {
         },
 
         //Nếu dữ liệu được update thì lấy lại từ database
-        // Ngày sửa: 9/7/2022
+        // Ngày sửa: 9/8/2022
         // Người sửa: NMDUC
         isTableUpdated: function(){
             if(this.isTableUpdated === true){
                 //Lấy data từ API
-                this.isLoading = true
                 this.callPagingAPI()
                 this.isTableUpdated = false
+                //Tắt màn hình tải trang khi gọi xong
+                this.isLoading = true
             }
         },
     },
@@ -303,7 +318,8 @@ export default {
         FoodDetails,
         LoadingScreen,
         ModalAlert,
-        DButton
+        DButton,
+        ModalSuccess
     },
 
     methods:{
@@ -322,28 +338,28 @@ export default {
             this.callPagingAPI()
         },
 
-        //Set giá trị cho tìm kiếm theo nhóm thức ăn
+        //Set giá trị cho tìm kiếm theo nhóm thức ăn, gửi vào component inputIcon
         // Ngày sửa: 15/8/2022
         // Người sửa: NMDUC
         setGroupFilterInputValue(value){
             this.groupFilter = value
         },
 
-        //Set giá trị cho tìm kiếm theo mã thức ăn
+        //Set giá trị cho tìm kiếm theo mã thức ăn, gửi vào component inputIcon
         // Ngày sửa: 15/8/2022
         // Người sửa: NMDUC
         setCodeFilterInputValue(value){
             this.codeFilter = value
         },
 
-        //Set giá trị cho tìm kiếm theo tên thức ăn
+        //Set giá trị cho tìm kiếm theo tên thức ăn, gửi vào component inputIcon
         // Ngày sửa: 15/8/2022
         // Người sửa: NMDUC
         setNameFilterInputValue(value){
             this.nameFilter = value
         },
 
-        //Set giá trị cho tìm kiếm theo loại thức ăn
+        //Set giá trị cho tìm kiếm theo loại thức ăn, gửi vào component inputIcon
         // Ngày sửa: 15/8/2022
         // Người sửa: NMDUC
         setTypeFilterInputValue(value){
@@ -351,7 +367,7 @@ export default {
             
         },
 
-        //Chọn dòng đang được lựa chọn
+        //Chọn dòng đang được lựa chọn, dòng sẽ có màu xanh đậm
         // Ngày sửa: 18/8/2022
         // Người sửa: NMDUC
         setCurrentRowSelected(index, foodId, foodCode){
@@ -360,7 +376,7 @@ export default {
             this.currentRowSelected.code = foodCode
         },
 
-        //Khi bấm enter tại các input tìm kiếm
+        //Khi bấm enter tại các input tìm kiếm, gọi api phân trang
         // Ngày sửa: 15/8/2022
         // Người sửa: NMDUC
         onEnterFilterInput(){
@@ -403,35 +419,87 @@ export default {
 
         //*Thêm sửa xóa nhân bản
 
+        //Khi bấm nút thêm trên thanh công cụ
+        // Ngày sửa: 15/8/2022
+        // Người sửa: NMDUC
         onClickAddButton(){
             this.isFormOpened = true
             this.editMode = false
         },
 
+        //Khi bấm nút nhân bản trên thanh công cụ
+        // Ngày sửa: 15/8/2022
+        // Người sửa: NMDUC
         onClickDuplicateButton(){
             this.isFormOpened = true
             this.editMode = 'duplicate'
         },
 
+        //Khi bấm nút sửa trên thanh công cụ, mở form sửa dòng hiện tại
+        // Ngày sửa: 15/8/2022
+        // Người sửa: NMDUC
         onClickUpdateButton(){
             this.isFormOpened = true
             this.editMode = true
         },
 
+        //Khi bấm xóa thêm trên thanh công cụ, mở modal xóa dòng
+        // Ngày sửa: 15/8/2022
+        // Người sửa: NMDUC
         onClickDeleteButton(){
             this.setIsAlertOpened(true)
         },
 
         ///*
 
+        //đóng/ mở form dựa theo state
+        // Ngày sửa: 15/8/2022
+        // Người sửa: NMDUC
         setFormState(state){
             this.isFormOpened = state
         },
 
+        //đóng/ mở modal cảnh báo dựa theo state
+        // Ngày sửa: 15/8/2022
+        // Người sửa: NMDUC
         setIsAlertOpened(state){
             this.isModalAlert = state
         },
 
+        //Hàm set giá trị cho editMode (Gửi vào trong form)
+        // Ngày sửa: 15/8/2022
+        // Người sửa: NMDUC
+        setEditMode(state){
+            this.editMode = state
+        },
+
+        //hàm set giá trị cho biến isLoading (đưa vào trong component form nhỏ)
+        // Ngày sửa: 15/8/2022
+        // Người sửa: NMDUC
+        setIsLoading(state){
+            this.isLoading = state
+        },
+
+        //hàm hiển thị modal success (đưa vào trong component form nhỏ)
+        // Ngày sửa: 15/8/2022
+        // Người sửa: NMDUC
+        showSuccessModal(){
+            this.isUpdateError = false
+            this.countdownConfirmModal();
+        },
+
+        //hàm hiển thị modal error khi gọi api (đưa vào trong component form nhỏ)
+        // Ngày sửa: 15/8/2022
+        // Người sửa: NMDUC
+        showErrorModal(err){
+            this.listErrorResponse = err.response.data.data.errors
+            this.isConfirmModal = true
+            this.isUpdateError = true
+        },
+
+        //đếm ngược cho mdal thêm mới thành công
+        // Ngày sửa: 15/8/2022
+        // Người sửa: NMDUC
         countdownConfirmModal(){
             this.isConfirmModal = true
             setTimeout(() => {
@@ -443,10 +511,8 @@ export default {
         // Ngày sửa: 9/7/2022
         // Người sửa: NMDUC
         async sendFood(newFood){
-            
+            //hiện màn hình tải trang
             this.isLoading = true
-            //convert dữ liệu đúng định dạng trước khi gửi
-            console.log(newFood);
             //Gửi yêu cầu
             try{
                 var res = await axios.post("http://localhost:5011/api/v1/Foods", newFood)
@@ -456,11 +522,11 @@ export default {
             }
             }
             catch(err){
-                console.log(err.response.data.data.errors);
                 this.listErrorResponse = err.response.data.data.errors
                 this.isConfirmModal = true
                 this.isUpdateError = true
             }
+            //khi biến này thay đổi sẽ gọi lại api phân trang và ẩn màn hình tải trang sau đó
             this.isTableUpdated = true
 
         },
@@ -469,9 +535,8 @@ export default {
         // Ngày sửa: 9/7/2022
         // Người sửa: NMDUC
         async updateFood(foodUpdate){
+            //hiện màn hình tải trang
             this.isLoading = true
-            //convert dữ liệu đúng định dạng trước khi gửi
-            
             //Gửi yêu cầu
             try{
                 var res = await axios.put("http://localhost:5011/api/v1/Foods", foodUpdate)
@@ -481,9 +546,12 @@ export default {
             }
             }
             catch(err){
-                this.isUpdateError = true
                 console.log(err);
+                this.listErrorResponse = err.response.data.data.errors
+                this.isConfirmModal = true
+                this.isUpdateError = true
             }
+            //khi biến này thay đổi sẽ gọi lại api phân trang và ẩn màn hình tải trang sau đó
             this.isTableUpdated = true
         },
 
@@ -502,10 +570,10 @@ export default {
                 this.isUpdateError = true
             }
             this.isModalAlert = false
+            //khi biến này thay đổi sẽ gọi lại api phân trang và ẩn màn hình tải trang sau đó
             this.isTableUpdated = true
         },
 
-        
         //Gọi API phân trang
         // Ngày sửa: 15/8/2022
         // Người sửa: NMDUC
@@ -514,6 +582,7 @@ export default {
             var me = this
 
             var apiStr = "http://localhost:5011/api/v1/Foods/filter?";
+            //Hoàn thanhd api dựa vào tham số truyền vào
             if(this.currentPage){
                 apiStr+= `pageIndex=${this.currentPage}`
             }
@@ -535,24 +604,37 @@ export default {
             try{
                 var res = await axios.get(apiStr)
                 me.foodList = res.data.Data
+                //set tổng số bản ghi, bản ghi hiển thị
                 this.totalRecord = res.data.TotalRecord
                 this.recordStart = res.data.RecordStart
                 this.recordEnd = res.data.RecordEnd
+                //nếu bản ghi cuối cùng > tổng số bản ghi, set bản ghi cuối là số bản ghi
                 if(this.recordEnd > this.totalRecord){
                     this.recordEnd = this.totalRecord
                 }
+                //tổng số trang = tổng số bản ghi / số bản ghi 1 trang + 1 
                 this.pageCount = Math.ceil(this.totalRecord / this.pageSize) 
+                //sau khi gọi api, nếu trang hiện tại = tổng số tảng thì disable chức năng next
                 if (this.currentPage === this.pageCount) {
                     this.isNextDisabled = true
                 }
-            else{
-                this.isNextDisabled = false
-            }
+                //nếu không thì enable trở lại
+                else{
+                    this.isNextDisabled = false
+                }
+                //nếu trang hiện tại đang > tổng số trang thì gọi lại api đến trang cuối
+                if (this.currentPage > this.pageCount) {
+                    this.currentPage = this.pageCount
+                    this.callPagingAPI()
+                }
             }
             catch(err){
                 console.log(err);
             }
-            this.currentRowSelected = {index: 0, id: this.foodList[0].FoodId, code: this.foodList[0].FoodCode}
+            //khi có dữ liệu thì focus vào dòng đầu tiên của bảng
+            if(this.foodList[0]){
+                this.currentRowSelected = {index: 0, id: this.foodList[0].FoodId, code: this.foodList[0].FoodCode}
+            }
             this.isLoading = false
         },
     },
@@ -575,14 +657,18 @@ export default {
             isLoading: false,
             isPreDisabled: true,
             isNextDisabled: false,
+            //Bộ lọc gửi về backend để phân trang
             groupFilter: "",
             codeFilter: "",
             nameFilter: "",
             typeFilter: "",
+            //
             isModalAlert: false,
             isConfirmModal: false,
             isUpdateError: false,
-            isTableUpdated: false
+            isTableUpdated: false,
+            listErrorResponse: [],
+            successMsg: SuccessMsg.success_Msg
         }
     }
 }

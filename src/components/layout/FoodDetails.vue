@@ -32,6 +32,8 @@
                     :inputValue = "foodInfo.FoodName"
                     :checkFocus = "checkFocus.FoodName"
                     :title="errorMsg.FoodName"
+                    :isString="true"
+                    @changeForm="changeForm"
                     @setInputValue="setInputValue"
                     @validateMandaInput = "validateMandaInput"
                     @generateNewCode="generateNewCode"
@@ -46,6 +48,8 @@
                     :inputValue = "foodInfo.FoodCode"
                     :checkFocus = "checkFocus.FoodCode"
                     :title="errorMsg.FoodCode"
+                    :isString="true"
+                    @changeForm="changeForm"
                     @setInputValue="setInputValue"
                     @validateMandaInput = "validateMandaInput"
                     ></combo-input>
@@ -60,9 +64,11 @@
                     :checkFocus = "checkFocus.FoodGroupName"
                     :title="errorMsg.FoodGroupName"
                     :options="foodGroupNameList"
+                    :isString="true"
+                    @changeForm="changeForm"
                     @setInputValue="setInputValue"
-                    @validateMandaInput = "validateMandaInput"
                     @setFormState="setIsFormFoodDetail"
+                    @validateMandaInput = "validateMandaInput"
                     ></combo-input>
                     <combo-input
                     name = "FoodUnitName"
@@ -76,6 +82,8 @@
                     :checkFocus = "checkFocus.FoodUnitName"
                     :title="errorMsg.FoodUnitName"
                     :options="foodUnitNameList"
+                    :isString="true"
+                    @changeForm="changeForm"
                     @setInputValue="setInputValue"
                     @validateMandaInput = "validateMandaInput"
                     @setFormState="setIsFormFoodDetail"
@@ -91,21 +99,24 @@
                     :inputValue = "foodInfo.FoodSellPrice"
                     :checkFocus = "checkFocus.FoodSellPrice"
                     :title="errorMsg.FoodSellPrice"
+                    :isNumberInput="true"
+                    @changeForm="changeForm"
                     @setInputValue="setInputValue"
                     @validateMandaInput = "validateMandaInput"
                     ></combo-input>
                     <combo-input
-                    name = "FoodMadePrice"
-                    id="FoodMadePrice"
-                    :propName="'FoodMadePrice'"
+                    name = "FoodMakePrice"
+                    id="FoodMakePrice"
+                    :propName="'FoodMakePrice'"
                     :labelName = "'Giá vốn'"
-                    :isError = "isError.FoodMadePrice"
+                    :isError = "isError.FoodMakePrice"
                     :isPriceInput = "true"
-                    :inputValue = "foodInfo.FoodMadePrice"
-                    :checkFocus = "checkFocus.FoodMadePrice"
-                    :title="errorMsg.FoodMadePrice"
+                    :inputValue = "foodInfo.FoodMakePrice"
+                    :checkFocus = "checkFocus.FoodMakePrice"
+                    :title="errorMsg.FoodMakePrice"
+                    :isNumberInput="true"
+                    @changeForm="changeForm"
                     @setInputValue="setInputValue"
-                    @validateMandaInput = "validateMandaInput"
                     ></combo-input>
                     <combo-input
                     name = "Description"
@@ -117,8 +128,9 @@
                     :inputValue = "foodInfo.Description"
                     :checkFocus = "checkFocus.Description"
                     :title="errorMsg.Description"
+                    :isString="true"
+                    @changeForm="changeForm"
                     @setInputValue="setInputValue"
-                    @validateMandaInput = "validateMandaInput"
                     ></combo-input>
                     <combo-input
                     name = "FoodPlaceName"
@@ -131,9 +143,11 @@
                     :checkFocus = "checkFocus.FoodPlaceName"
                     :title="errorMsg.FoodPlaceName"
                     :options="foodPlaceNameList"
+                    :isString="true"
+                    @changeForm="changeForm"
                     @setInputValue="setInputValue"
-                    @validateMandaInput = "validateMandaInput"
                     @setFormState="setIsFormFoodDetail"
+                    @validateMandaInput = "validateMandaInput"
                     ></combo-input>
                     <div class="showOnMenu">
                         <the-checkbox></the-checkbox>
@@ -190,8 +204,11 @@
                                         <input
                                         :name="`FoodHobbyName0${index}`"
                                         v-model="foodInfo.FoodHobbyList[index].FoodHobbyName"
-                                        :ref="`FoodHobbyName`"/>
-                                        <div class="dropdown-icon" @click="toggleComboboxHobby(index)" v-show="isFoodHobbyInput[0][index]"></div>
+                                        :ref="`FoodHobbyName`"
+                                        autocomplete="off"
+                                        @focusout="onFocusOutFoodHobbyInput(index)"
+                                        />
+                                        <div class="dropdown-icon" @click="(e) => toggleComboboxHobby(e, index)" v-show="isFoodHobbyInput[0][index]"></div>
                                         <div class="search-icon" v-show="isFoodHobbyInput[0][index]"></div>
                                         <div class="add-icon" v-show="isFoodHobbyInput[0][index]" @click="setIsFormFoodHobby(index, true)"></div>
                                         <base-table-combobox
@@ -200,6 +217,8 @@
                                         :inputValue="foodInfo.FoodHobbyList[index]"
                                         :indexSelected="index"
                                         :isShow="isComboboxHobby[index]"
+                                        :rectCalculate="rectCalculate"
+                                        v-click-outside="(e) => onCLickOutsideCombobox(e, index)"
                                         @toggleCombobox="toggleComboboxHobby"
                                         @setInputValue="setValueFoodHobbyInput"
                                         />
@@ -210,7 +229,9 @@
                                         <input
                                         :name="`FoodHobbyName1${index}`"
                                         v-model="foodInfo.FoodHobbyList[index].FoodHobbyFee"
-                                        :ref="`FoodHobbyFee`"/>
+                                        @input="validateMoneyInput(index)"
+                                        :ref="`FoodHobbyFee`"
+                                        autocomplete="off"/>
                                     </div>
                                 </td>
                             </tr>
@@ -240,6 +261,9 @@
     @setIsFormFoodDetail="setIsFormFoodDetail"
     @callAPIDetail="getAPIFoodGroup"
     @setInputValue="setInputValue"
+    @setIsLoading="setIsLoading"
+    @showErrorModal="showErrorModal"
+    @showSuccessModal="showSuccessModal"
     />
     <unit-detail-form 
     v-if="isFormFoodUnitName"
@@ -247,6 +271,9 @@
     @setIsFormFoodDetail="setIsFormFoodDetail"
     @callAPIDetail="getAPIFoodUnit"
     @setInputValue="setInputValue"
+    @setIsLoading="setIsLoading"
+    @showErrorModal="showErrorModal"
+    @showSuccessModal="showSuccessModal"
     />
     <place-detail-form 
     v-if="isFormFoodPlaceName"
@@ -254,6 +281,9 @@
     @setIsFormFoodDetail="setIsFormFoodDetail"
     @callAPIDetail="getAPIFoodPlace"
     @setInputValue="setInputValue"
+    @setIsLoading="setIsLoading"
+    @showErrorModal="showErrorModal"
+    @showSuccessModal="showSuccessModal"
     />
     <hobby-detail-form
     v-if="isFormFoodHobby"
@@ -262,26 +292,36 @@
     @setIsFormFoodDetail="setIsFormFoodDetail"
     @callAPIDetail="getAPIFoodHobby"
     @setInputValue="setValueFoodHobbyInput"
+    @setIsLoading="setIsLoading"
+    @showErrorModal="showErrorModal"
+    @showSuccessModal="showSuccessModal"
     />
     <modal-alert
         v-if="isAlertOpened"
         :duplicateId="duplicateId"
-        :modalType="modalType">
+        :modalType="'warning'">
             <template #button-section>
-                <d-button v-show="modalType === 'warning'" btnText="Đồng ý" @click="closeAlert()"></d-button>
+                <d-button btnText="Đồng ý" @click="closeAlert()"></d-button>
             </template>
     </modal-alert>
     <modal-alert
     v-if="isModalChange"
-    :modalType="modalType">
+    :modalType="'confirm-change'">
         <template #button-section>
-            <div class="left" v-show="modalType === 'confirm-change'">
+            <div class="left">
                 <d-button btnText="Hủy" @click="setIsModalChange(false)"></d-button>
             </div>
-            <div class="right" v-show="modalType === 'confirm-change'" style="display: flex;">
+            <div class="right" style="display: flex;">
                 <d-button btnText="Không" @click="(e) => onClickNoModalChange(e)"></d-button>
                 <d-button btnText="Có" @click="(e) => onClickYesModalChange(e)" style="margin-left: 10px;"></d-button>
             </div>
+        </template>
+    </modal-alert>
+    <modal-alert
+    v-if="isModalHobbyDuplicate"
+    :modalType="'duplicateFoodHobby'">
+        <template #button-section>
+            <d-button btnText="Đồng ý" @click="closeDuplicateHobby()"></d-button>
         </template>
     </modal-alert>
 </div>
@@ -314,29 +354,44 @@ export default {
     HobbyDetailForm,
     BaseTableCombobox
 },
-
+    
+    //khi khởi tạo, gọi tất cả danh sách cần thiết để đưa vào combobox
+    //nếu đang edit hoặc nhân bản thì gọi api trả về dữ liệu tương ưng, đàu vào là id truyền từ cha
+    //khi edit, lưu food đang update để check trùng
+    //CreatedBy: NMDUC
+    //CreatedDate: 21/8/2022
     created(){
+        this.isFormChange = false
         this.getAPIFoodCode()
         this.getAPIFoodGroup()
         this.getAPIFoodPlace()
         this.getAPIFoodUnit()
         this.getAPIFoodHobby()
-
-            if(this.editMode === false){
-                this.foodInfo = {FoodHobbyList: [{FoodHobbyName: '',FoodHobbyFee: 0}]}
-            }
-            else if(this.editMode === true){
-                axios.get(`http://localhost:5011/api/v1/Foods/${this.foodUpdateId}`).then(res => {
-                    this.foodInfo = res.data
-                    this.foodUpdateCode = this.foodInfo.FoodCode
-                })
-            }
-            else{
-                axios.get(`http://localhost:5011/api/v1/Foods/${this.foodUpdateId}`).then(res => {
-                    this.foodInfo = res.data
-                    this.foodUpdateCode = this.foodInfo.FoodCode
-                })
-            }
+        if(this.editMode === false){
+            this.foodInfo = {FoodHobbyList: [{FoodHobbyName: '',FoodHobbyFee: 0}]}
+            this.focusInput("FoodName")
+        }
+        else if(this.editMode === true){
+            axios.get(`http://localhost:5011/api/v1/Foods/${this.foodUpdateId}`).then(res => {
+                this.foodInfo = res.data
+                this.foodUpdateCode = this.foodInfo.FoodCode
+                //Hiển thị giá bán với dấu chấm ở giữa
+                this.foodInfo.FoodSellPrice = this.validateMoney(this.foodInfo.FoodSellPrice)
+                this.foodInfo.FoodMakePrice = this.validateMoney(this.foodInfo.FoodMakePrice)
+                this.focusInput("FoodName")
+            })
+        }
+        else{
+            axios.get(`http://localhost:5011/api/v1/Foods/${this.foodUpdateId}`).then(res => {
+                this.foodInfo = res.data
+                this.generateNewCode(this.foodInfo.FoodName)
+                //Hiển thị giá bán với dấu chấm ở giữa
+                this.foodInfo.FoodSellPrice = this.validateMoney(this.foodInfo.FoodSellPrice)
+                this.foodInfo.FoodMakePrice = this.validateMoney(this.foodInfo.FoodMakePrice)
+                this.focusInput("FoodName")
+            })
+        }
+        
     },
 
     methods: {
@@ -363,6 +418,9 @@ export default {
             }
         },
 
+        //Lấy danh sách nhóm thức ăn
+        //CreatedBy: NMDUC
+        //CreatedDate: 21/8/2022
         getAPIFoodGroup(){
             var me = this
             //Khi gọi Api thì đặt lại danh sách id = rỗng
@@ -384,6 +442,9 @@ export default {
             }
         },
 
+        //Lấy danh sách đơn vị tính
+        //CreatedBy: NMDUC
+        //CreatedDate: 21/8/2022
         getAPIFoodUnit(){
             var me = this
             //Khi gọi Api thì đặt lại danh sách id = rỗng
@@ -405,6 +466,9 @@ export default {
             }
         },
 
+        //Lấy danh sách nơi chế biến
+        //CreatedBy: NMDUC
+        //CreatedDate: 21/8/2022
         getAPIFoodPlace(){
             var me = this
             //Khi gọi Api thì đặt lại danh sách id = rỗng
@@ -426,6 +490,9 @@ export default {
             }
         },
 
+        //Lấy danh sách sở thích phục vụ
+        //CreatedBy: NMDUC
+        //CreatedDate: 21/8/2022
         getAPIFoodHobby(){
             var me = this
             //Khi gọi Api thì đặt lại danh sách id = rỗng
@@ -446,10 +513,18 @@ export default {
             }
         },
 
+        //thay đổi form set isFormchange = true
+        //CreatedBy: NMDUC
+        //CreatedDate: 21/8/2022
+        changeForm(){
+            this.isFormChange = true
+        },
+
         //Khi bấm cất
         //CreatedBy: NMDUC
         //CreatedDate: 17/8/2022
         onSubmitClick(e){
+            var hobbyList = this.foodInfo.FoodHobbyList
             e.preventDefault();
             //Kiểm tra lỗi
             this.validateForm()
@@ -459,9 +534,20 @@ export default {
                 this.currentTab = "FoodInfoTab"
                 return
             }
+            //Nếu trùng mã
             if (this.checkDuplicate() === false) {
                 this.currentTab = "FoodInfoTab"
                 return
+            }
+            //Nếu sở thích phục vụ trùng nhau
+            for(let i = 0; i< hobbyList.length; i++){
+                for(let j = i + 1; j< hobbyList.length; j++){
+                    if(hobbyList[i].FoodHobbyName === hobbyList[j].FoodHobbyName &&
+                    hobbyList[i].FoodHobbyFee === hobbyList[j].FoodHobbyFee){
+                        this.setIsModalHobbyDuplicate(true);
+                        return
+                    }
+                }
             }
             this.updateData();
             this.$emit('setFormState', false)
@@ -472,32 +558,43 @@ export default {
         //CreatedDate: 17/8/2022
         onSubmitAndAddClick(e){
             e.preventDefault();
+            var hobbyList = this.foodInfo.FoodHobbyList
             //Kiểm tra lỗi
             this.validateForm()
             //Nếu có error
             if (Object.keys(this.errorMsg).length > 0) {
+                this.currentTab = "FoodInfoTab"
                 this.focusInput(Object.keys(this.errorMsg)[0])
                 return
             }
             if (this.checkDuplicate() === false) {
+                this.currentTab = "FoodInfoTab"
                 return
+            }
+            //Nếu sở thích phục vụ trùng nhau
+            for(let i = 0; i< hobbyList.length; i++){
+                for(let j = i+1; j< hobbyList.length; j++){
+                    if(hobbyList[i].FoodHobbyName === hobbyList[j].FoodHobbyName &&
+                    hobbyList[i].FoodHobbyFee === hobbyList[j].FoodHobbyFee){
+                        this.setIsModalHobbyDuplicate(true);
+                        return
+                    }
+                }
             }
             this.updateData();
             this.foodInfo = {FoodHobbyList: []}
+            this.$emit('setEditMode', false)
         },
 
-        //Khi bấm hủy bỏ
+        //lấy dữ liệu từ form để validate
+        //những trường sai đặt isError của trường đó = true, đồng thời set errMsg cho trường đó 
+        //Các errmsg sẽ hiện dưới dạng title
         //CreatedBy: NMDUC
         //CreatedDate: 17/8/2022
-        onCancelClick(e){
-            e.preventDefault();
-            this.$emit('setFormState', false)
-        },
-
         validateForm(){
             const error = {};
             const values = this.foodInfo
-            if (!values.FoodName){
+            if (!values.FoodName || !values.FoodName.trim()){
                 error.FoodName = ErrMsgs.errMsg_FoodName_Null;
                 this.isError.FoodName = true;
             }
@@ -505,7 +602,7 @@ export default {
                 this.isError.FoodName = false;
             }
 
-            if (!values.FoodCode){
+            if (!values.FoodCode || !values.FoodCode.trim()){
                 error.FoodCode = ErrMsgs.errMsg_FoodCode_Null;
                 this.isError.FoodCode = true;
             }
@@ -520,8 +617,7 @@ export default {
             else{
                 this.isError.FoodGroupName = false;
             }
-
-            if(values.foodPlaceName && !this.FoodPlaceNameList.includes(values.FoodPlaceName)){
+            if(values.FoodPlaceName && !this.foodPlaceNameList.includes(values.FoodPlaceName)){
                 error.FoodPlaceName = ErrMsgs.errMsg_FoodPlaceName_Invalid
                 this.isError.FoodPlaceName = true;
             }
@@ -541,7 +637,7 @@ export default {
                 this.isError.FoodUnitName = false;
             }
 
-            if (!values.FoodSellPrice){
+            if (!values.FoodSellPrice && values.FoodSellPrice !== 0){
                 error.FoodSellPrice = ErrMsgs.errMsg_FoodSellPrice_Null;
                 this.isError.FoodSellPrice = true;
             }
@@ -551,12 +647,14 @@ export default {
             this.errorMsg = error;
         },
 
-        //Check trùng dữ liệu, nếu trùng hiện cảnh báo(alert)
+        //Check trùng dữ liệu
         // Ngày sửa: 18/8/2022
         // Người sửa: NMDUC
         checkDuplicate(){
-        //Nếu đang thực hiện thêm mới
+        //Nếu đang thực hiện edit
         if (this.editMode === true) {
+            //nếu trùng hiện cảnh báo(alert), đồng thời set cho biến duplicateId để hiển thị lên cảnh báo
+            //biến propFocus cũng được set thành FoodCode để truyền vào modal, sau khi đóng sẽ focus vào đó
             if(this.foodCodeList.includes(this.foodInfo.FoodCode) && this.foodInfo.FoodCode !== this.foodUpdateCode){
                 this.setIsModalAlert(true);
                 this.duplicateId = this.foodInfo.FoodCode;
@@ -566,8 +664,10 @@ export default {
             return true
             
         }
+        //Nếu đang thực hiện thêm mới hoặc nhân bản
         else{
-            //Nếu dữ liệu trùng
+            //nếu trùng hiện cảnh báo(alert), đồng thời set cho biến duplicateId để hiển thị lên cảnh báo
+            //biến propFocus cũng được set thành FoodCode để truyền vào modal, sau khi đóng sẽ focus vào đó
             if (this.foodCodeList.includes(this.foodInfo.FoodCode)) {
                 this.setIsModalAlert(true);
                 this.duplicateId = this.foodInfo.FoodCode;
@@ -578,8 +678,12 @@ export default {
         }
         },
 
+        //Khi đã đúng hết định dạng và có thể gửi về backend, thực hiện update
+        // Ngày sửa: 18/8/2022
+        // Người sửa: NMDUC
         updateData(){
-            this.isError = {};
+            //convert dữ liệu đúng định dạng trước khi gửi
+            //trước khi gửi, set cho id của các trường nhóm thức ăn, nơi chế biến, đơn vị tính theo name đã có
             if(this.foodInfo.FoodGroupName){
                 this.foodInfo.FoodGroupId = this.ConvertFoodGroup[this.foodInfo.FoodGroupName]
             }
@@ -589,7 +693,9 @@ export default {
             if(this.foodInfo.FoodPlaceName){
                 this.foodInfo.FoodPlaceId = this.ConvertFoodPlace[this.foodInfo.FoodPlaceName]
             }
+            //validate trường danh sách sở thích
             this.foodInfo.FoodHobbyList.forEach((hobby) => {
+                hobby.FoodHobbyName = hobby.FoodHobbyName.trim()
                 if(!hobby.FoodHobbyName || hobby.FoodHobbyName === ""){
                     var indexDelete = this.foodInfo.FoodHobbyList.indexOf(hobby)
                     this.foodInfo.FoodHobbyList = this.foodInfo.FoodHobbyList.filter((item, index) => indexDelete !== index)
@@ -600,8 +706,14 @@ export default {
                     }
                 }
             });
-            //Nếu dữ liệu hợp lệ
+            //validate giá bán trước khi gửi (bỏ dấu chấm ở giữa)
+            this.foodInfo.FoodSellPrice = this.foodInfo.FoodSellPrice.toString().replaceAll('.', '')
+            this.foodInfo.FoodSellPrice = Number.parseFloat(this.foodInfo.FoodSellPrice)
+            this.foodInfo.FoodMakePrice = this.foodInfo.FoodMakePrice.toString().replaceAll('.', '')
+            this.foodInfo.FoodMakePrice = Number.parseFloat(this.foodInfo.FoodMakePrice)
+            //emit hàm của component cha để gọi API
             if (this.editMode === true) {
+                this.foodInfo.FoodType = "Món ăn"
                 this.$emit('updateFood',this.foodInfo);
             } else {
                 this.foodInfo.FoodType = "Món ăn"
@@ -621,26 +733,31 @@ export default {
         //CreatedDate: 17/8/2022
         setInputValue(propName, value){
             this.foodInfo[propName] = value
+            this.isError[propName] = false
+            this.errorMsg[propName] = ""
         },
 
-        //Hiện input để nhập dữ liệu vào table
+        //Hiện 2 icon của input trong bảng danh sách sở thích
         //CreatedBy: NMDUC
         //CreatedDate: 17/8/2022
         showTableInput(colNum, index, propName){
             this.currentHobbyRowSelected = index
             this.isFoodHobbyInput[colNum][index] = true;
             this.$nextTick(function(){
-                this.$refs[propName][index].select()
+                this.$refs[propName][index].focus()
             })
         },
 
-        //Ẩn input của table
+        //Ẩn Hiện 2 icon của input trong bảng danh sách sở thích
         //CreatedBy: NMDUC
         //CreatedDate: 17/8/2022
         hideTableInput(event, colNum, index){
             this.isFoodHobbyInput[colNum][index] = false;
         },
 
+        //set value cho attr FoodHobbyList, hàm này gửi vào combobox-table để set khi chọn option
+        //CreatedBy: NMDUC
+        //CreatedDate: 17/8/2022
         setValueFoodHobbyInput(index, value){
             this.foodInfo.FoodHobbyList[index].FoodHobbyName = value.FoodHobbyName
             this.foodInfo.FoodHobbyList[index].FoodHobbyFee = value.FoodHobbyFee
@@ -660,14 +777,28 @@ export default {
             this.foodInfo.FoodHobbyList = this.foodInfo.FoodHobbyList.filter((item, index) => index !== currentIndex)
         },
 
-        //Đánh lỗi cho các trường bắt buộc
+        //Đánh lỗi cho các trường bắt buộc hàm này truyền vào combo-input để gọi khi hover ra
+        //ddawtj title laf errMsg cho các trường lỗi
         //CreatedBy: NMDUC
         //CreatedDate: 17/8/2022
-        validateMandaInput(propName, state){
+        validateMandaInput(propName, state, errorType){
             this.isError[propName] = state
+            if(state === true){
+                var errName = `errMsg_${propName}_${errorType}`
+                this.errorMsg[propName] = ErrMsgs[errName]
+            }
+            else{
+                this.errorMsg[propName] = ""
+            }
         },
 
+        //sinh mã mới
+        //CreatedBy: NMDUC
+        //CreatedDate: 17/8/2022
         generateNewCode(foodName){
+            if(this.editMode === true){
+                return
+            }
             foodName = this.validateCodeString(foodName)
             var newCode = ''
             if(!this.foodCodeList.includes(this.getFirstLetter(foodName))){
@@ -683,40 +814,101 @@ export default {
             this.isError.FoodCode = false
         },
 
+        //hàm dùng chung đóng, mở các form nhỏ
+        //đầu vào là tên form sẽ mở và trạng thái mở
+        //CreatedBy: NMDUC
+        //CreatedDate: 17/8/2022
         setIsFormFoodDetail(propName, state){
             var str = "isForm" + propName
             this[str] = state
         },
 
+        //hàm riêng để mở form sở thích vì sau khi đóng form phải focus vào đúng ô input dùng để mở
+        //đầu vào là index của ô input dùng để mở form và trang thái
+        //CreatedBy: NMDUC
+        //CreatedDate: 17/8/2022
         setIsFormFoodHobby(index, state){
             this.indexFoodHobbySelected = index
             this.isFormFoodHobby = state
         },
 
-        //Mở modal cảnh báo
+        //Mở modal cảnh báo mã món ăn không được trùng
         //CreatedBy: NMDUC
         //CreatedDate: 17/8/2022
         setIsModalAlert(state){
             this.isAlertOpened = state
         },
 
+        //Mở modal thay đổi khi bấm x
+        //CreatedBy: NMDUC
+        //CreatedDate: 17/8/2022
         setIsModalChange(state){
             this.isModalChange = state
         },
 
-        onClickCloseForm(){
-            this.modalType = 'confirm-change'
-            this.setIsModalChange(true)
+        //Mở modal cảnh báo sở thích trùng
+        //CreatedBy: NMDUC
+        //CreatedDate: 17/8/2022
+        setIsModalHobbyDuplicate(state){
+            this.isModalHobbyDuplicate = state
         },
 
+        //hàm hứng hàm setIsLoading
+        // Ngày sửa: 15/8/2022
+        // Người sửa: NMDUC
+        setIsLoading(state){
+            this.$emit('setIsLoading', state)
+        },
+
+        //hàm hứng hàm showErrorModal
+        // Ngày sửa: 15/8/2022
+        // Người sửa: NMDUC
+        showErrorModal(err){
+            this.$emit('showErrorModal', err)
+        },
+
+        //hàm hứng hàm showSuccessModal
+        // Ngày sửa: 15/8/2022
+        // Người sửa: NMDUC
+        showSuccessModal(){
+            this.$emit('showSuccessModal')
+        },
+
+        //khi đóng form
+        //CreatedBy: NMDUC
+        //CreatedDate: 17/8/2022
+        onClickCloseForm(){
+            if(this.isFormChange){
+                this.setIsModalChange(true)
+            }
+            else{
+                this.$emit('setFormState', false)
+            }
+            
+        },
+
+        //khi click không tại modal-change
+        //CreatedBy: NMDUC
+        //CreatedDate: 17/8/2022
         onClickNoModalChange(e){
             this.setIsModalChange(false)
             this.onCancelClick(e)
         },
 
+        //khi click có tại modal-change
+        //CreatedBy: NMDUC
+        //CreatedDate: 17/8/2022
         onClickYesModalChange(e){
             this.setIsModalChange(false)
             this.onSubmitClick(e)
+        },
+
+        //Khi bấm hủy bỏ
+        //CreatedBy: NMDUC
+        //CreatedDate: 17/8/2022
+        onCancelClick(e){
+            e.preventDefault();
+            this.$emit('setFormState', false)
         },
 
         //Focus vào 1 input cụ thể 
@@ -727,18 +919,55 @@ export default {
             this.checkFocus[propName] = !this.checkFocus[propName]
         },
 
-        toggleComboboxHobby(index){
+        //Mở combobox của input tương ứng tại bảng sở thích
+        //đầu vào: e: sự kiện bấm và index của input được bấm
+        //tính toán vị trí của dropdown-icon được bấm và truyền vào combobox-table
+        //CreatedBy: NMDUC
+        //CreatedDate: 17/8/2022
+        toggleComboboxHobby(e, index){
+            this.rectCalculate = e.target.parentNode.getBoundingClientRect()
+            this.rectCalculate.y = this.rectCalculate.y + 23
+            this.isClickDropdownIcon[index] = true
             this.isComboboxHobby[index] =  !this.isComboboxHobby[index]
         },
 
-        //Đóng modal cảnh báo (alert)
+        //Đóng modal cảnh báo (alert) và focus vào ô FoodCode
         // Ngày sửa: 13/7/2022
         // Người sửa: NMDUC
         closeAlert(){
             this.setIsModalAlert(false)
             this.focusInput(this.propFocus)
+            this.currentTab = 'FoodInfoTab'
         },
 
+        //Đóng modal trùng (duplicate)
+        // Ngày sửa: 13/7/2022
+        // Người sửa: NMDUC
+        closeDuplicateHobby(){
+            this.setIsModalHobbyDuplicate(false)
+            this.currentTab = 'FoodHobbyTab'
+        },
+
+        //Khi bấm ra ngoài combobox, ẩn combobox
+        // Ngày sửa: 13/7/2022
+        // Người sửa: NMDUC
+        onCLickOutsideCombobox(e, index){
+            if (this.isClickDropdownIcon[index] === false) {
+                this.isComboboxHobby[index] = false
+            }
+            else{
+                this.isClickDropdownIcon[index] = false
+            }
+        },
+
+        onFocusOutFoodHobbyInput(index){
+            this.foodInfo.FoodHobbyList[index].FoodHobbyName = this.foodInfo.FoodHobbyList[index].FoodHobbyName.trim()
+        },
+
+        //chuyển tiếng việt sang tiếng anh + viết hoa
+        //dùng khi sinh mã mới
+        // Ngày sửa: 13/7/2022
+        // Người sửa: NMDUC
         validateCodeString(str) {
             str = str.replace(/à|á|ạ|ả|ã|â|ầ|ấ|ậ|ẩ|ẫ|ă|ằ|ắ|ặ|ẳ|ẵ/g, "a");
             str = str.replace(/è|é|ẹ|ẻ|ẽ|ê|ề|ế|ệ|ể|ễ/g, "e");
@@ -758,6 +987,10 @@ export default {
             return str;
         },
 
+        //lấy 1 chữ cái đầu mỗi từ
+        //dùng khi sinh mã mới
+        // Ngày sửa: 13/7/2022
+        // Người sửa: NMDUC
         getFirstLetter(str){
             var strParts = str.split(' ')
             var newCode = ''
@@ -767,6 +1000,10 @@ export default {
             return newCode
         },
 
+        //lấy 2 chữ cái đầu mỗi từ
+        //dùng khi sinh mã mới
+        // Ngày sửa: 13/7/2022
+        // Người sửa: NMDUC
         getTwoFirstLetter(str){
             var strParts = str.split(' ')
             var newCode = ''
@@ -776,12 +1013,38 @@ export default {
             return newCode
         },
 
+        //lấy toàn bộ chữ cái mỗi từ
+        //dùng khi sinh mã mới
+        // Ngày sửa: 13/7/2022
+        // Người sửa: NMDUC
         getAllLetter(str){
             var newCode = ''
             newCode = str.replace(/ /g,'')
             return newCode
         },
+
+        //validate trường tiền dành cho thu thêm
+        // Ngày sửa: 13/7/2022
+        // Người sửa: NMDUC
+        validateMoneyInput(index){
+            this.foodInfo.FoodHobbyList[index].FoodHobbyFee = this.validateMoney(this.foodInfo.FoodHobbyList[index].FoodHobbyFee)
+        },
         
+        //hàm validate tiền
+        // Ngày sửa: 13/7/2022
+        // Người sửa: NMDUC
+        validateMoney(money){
+            if(!money){
+                return
+            }
+            if (typeof money === 'number') {
+                money = Math.round(money);
+            }
+            return money
+                .toString()
+                .replace(/\D/g, "")
+                .replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+        }
     },
 
     data(){
@@ -794,6 +1057,7 @@ export default {
             currentHobbyRowSelected: 0,
             isAlertOpened: false,
             isModalChange: false,
+            isModalHobbyDuplicate: false,
             checkFocus: {},
             duplicateId: "",
             //Các danh sách lưu để check trùng
@@ -813,13 +1077,19 @@ export default {
             //
             foodUpdateCode: "",
             propFocus: "",
+            //mỗi input của table có 1 combobox, mỗi combobox có 1 biến này để ẩn hiện
             isComboboxHobby: [],
-            modalType: '',
+            //biến ẩn hiện của từng form nhỏ
             isFormFoodGroupName: false,
             isFormFoodPlaceName: false,
             isFormFoodUnitName: false,
             isFormFoodHobby: false,
-            indexFoodHobbySelected: ''
+            //
+            indexFoodHobbySelected: '',
+            isClickDropdownIcon: [],
+            rectCalculate: {},
+            //check form thay đổi
+            isFormChange: false
         }
     },
 

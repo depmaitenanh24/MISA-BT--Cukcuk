@@ -22,13 +22,18 @@ export default {
     },
 
     methods: {
+        //khi gõ và input, gửi dữ liệu về cho component cha
+        //CreatedDate: 23/8/2022
+        //CreatedBy: NMDUC
         onTypingInput(e){
             console.log(e);
             this.$emit('setInputValue', e.target.value)
         },
 
+        //Bắt sự kiện enter tại input để component cha xử lý
+        //CreatedDate: 23/8/2022
+        //CreatedBy: NMDUC
         onKeydownEnter(){
-            console.log('1');
             this.$emit('onEnterInput')
         }
     }

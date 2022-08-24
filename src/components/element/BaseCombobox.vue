@@ -44,6 +44,7 @@ export default {
         // Người sửa: NMDUC
         selectCombobox(option,index){
           this.$emit(`toggleCombobox`)
+          this.$emit('changeForm')
           this.$emit(`setInputValue`,option)
           for(let i = 0; i < this.options.length; i++){
               this.isComboboxSelected[i] = false

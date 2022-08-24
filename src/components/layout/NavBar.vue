@@ -9,9 +9,21 @@
         </div>
     </div>
     <ul>
-        <li class="menu">
+        <li class="menu selected">
             <div class="list-icon menu"></div>
             <p>Thực đơn</p>
+        </li>
+        <li class="menu">
+            <div class="list-icon report"></div>
+            <p>Báo cáo</p>
+        </li>
+        <li class="menu">
+            <div class="list-icon purchase"></div>
+            <p>Mua hàng</p>
+        </li>
+        <li class="menu">
+            <div class="list-icon inventory"></div>
+            <p>Kho</p>
         </li>
     </ul>
   </div>
@@ -25,14 +37,14 @@ export default {
 
 <style scoped>
     .d-nav-bar{
-        height: 100vh;
+        height: 100%;
         min-width: 230px;
         background: #0973b9;
     }
 
     .d-title {
     width: 100%;
-    height: 51px;
+    height: 55px;
     display: flex;
     padding: 12px 16px;
     align-items: center;
@@ -56,7 +68,7 @@ export default {
 
     li{
         display: flex;
-        height: 43px;
+        height: 40px;
         justify-content: flex-start;
         align-items: center;
         font-size: 13px;
@@ -66,6 +78,10 @@ export default {
     }
 
     li:hover{
+        background: #eb7728;
+    }
+
+    li.selected{
         background: #0199fc;
     }
 
@@ -74,9 +90,27 @@ export default {
     }
 
     .list-icon.menu{
-        background: url('../../assets/img/Sprites.64af8f61.svg') no-repeat -254px -1589px;
-        width: 14px;
-        height: 17px;
+        background: url('../../assets/img/vector-smart-object.png') no-repeat 0 0;
+        width: 24px;
+        height: 24px;
+    }
+
+    .list-icon.report{
+        background: url('../../assets/img/iconMenu.png') no-repeat no-repeat -3px -194px;
+        width: 24px;
+        height: 19px;
+    }
+
+    .list-icon.purchase{
+        background: url('../../assets/img/iconMenu.png') no-repeat -1px -377px;
+        width: 24px;
+        height: 19px;
+    }
+
+    .list-icon.inventory{
+        background: url('../../assets/img/iconMenu.png') no-repeat -4px -40px;
+        width: 24px;
+        height: 20px;
     }
 
 </style>

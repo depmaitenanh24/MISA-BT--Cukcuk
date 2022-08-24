@@ -4,7 +4,7 @@
         <div class="label-section">
             <label>{{labelName}}<span v-if="isMandaInput">(*)</span></label>
         </div>
-        <div class="input-container" v-click-outside="(e) => onFocusOutInput(e)">
+        <div class="input-container" v-click-outside="onFocusOutInput">
             <div class="icon-container add-container" v-if="isDropdownInput" @click="this.$emit('setFormState', propName, true)">
                 <div class="add-icon tool-icon"></div>
             </div>
@@ -14,12 +14,13 @@
             <input v-if="!isDescriptionInput"
             :class="{'error' : isError}"
             :value="myValue"
-            @focusin="this.isFocusingInput = true"
+            @focusin="onFocusingInput"
             @input="(e) => onTypingInput(e)"
             ref="input"/>
             <textarea v-if="isDescriptionInput"
             :class="{'error' : isError}"
             :value="myValue"
+            @focusin="onFocusingInput"
             @input="(e) => onTypingInput(e)"
             ref="input">
             </textarea>
@@ -29,6 +30,8 @@
             :inputValue="myValue"
             :options="options"
             v-click-outside="(e) => onCLickOutsideCombobox(e)"
+            @changeForm="changeForm"
+            @focusout="onFocusOutInput(e)"
             @setInputValue="setInputValue"
             @toggleCombobox="toggleCombobox"
             />
@@ -45,7 +48,9 @@ import BaseCombobox from "../element/BaseCombobox.vue";
 export default {
     watch:{
         checkFocus: function(){
-            this.$refs.input.focus()
+            this.$nextTick(() => {
+                this.$refs.input.focus()
+            })
         },
 
         inputValue: function(){
@@ -58,38 +63,71 @@ export default {
     },
 
     methods: {
-        onTypingInput(e){
-            this.$emit('setInputValue', this.propName, e.target.value)
+        //Khi focus vào input đặt biến = true để bắt clickoutside thì phải focus trước
+        //CreatedDate: 23/8/2022
+        //CreatedBy: NMDUC
+        onFocusingInput(){
+            this.isFocusingInput = true
         },
 
-        onFocusOutInput(e){
-            console.log(e);
+        //Khi gõ vào ô input thì gửi data về component cha: FoodDetails
+        //CreatedDate: 23/8/2022
+        //CreatedBy: NMDUC
+        onTypingInput(e){
+            this.myValue = e.target.value
+            if(this.isNumberInput){
+                this.myValue = this.validateMoney(this.myValue)
+            }
+            this.$emit('changeForm')
+            this.$emit('setInputValue', this.propName, this.myValue)
+        },
+
+        //Khi focus ra khỏi ô input thì validate nếu đây là input bắt buộc, sinh mã mới nếu đây là input tên món
+        //CreatedDate: 23/8/2022
+        //CreatedBy: NMDUC
+        onFocusOutInput(){
+            if(this.myValue && this.isString === true){
+                this.myValue = this.myValue.trim()
+                this.$emit('setInputValue', this.propName, this.myValue)
+            }
             if(this.isFocusingInput === true){
-                if(this.isMandaInput === true && !this.myValue){
-                    this.$emit('validateMandaInput', this.propName, true)
+                if((this.isMandaInput === true && (!this.myValue || this.myValue === ""))){
+                    this.$emit('validateMandaInput', this.propName, true, 'Null')
                 }
                 else if(this.propName === "FoodName"){
                     this.$emit('generateNewCode', this.myValue)
-                    this.$emit('validateMandaInput', this.propName, false)
+                }
+                else if(this.options && this.myValue && !this.options.includes(this.myValue)){
+                    this.$emit('validateMandaInput', this.propName, true, 'Invalid')
                 }
                 else{
-                    this.$emit('validateMandaInput', this.propName, false)
+                    this.$emit('validateMandaInput', this.propName, false, '')
                 }
                 this.isFocusingInput = false
             }
             
         },
 
+        //Hàm đặt value cho input của component này gửi vào component con: base-combobox 
+        //CreatedDate: 23/8/2022
+        //CreatedBy: NMDUC
         setInputValue(value){
             this.myValue = value
             this.$emit('setInputValue', this.propName, value)
         },
 
+        //đóng/mở combobox, đặt biến phụ = true nếu đang click vào dropdown-icon
+        //CreatedDate: 23/8/2022
+        //CreatedBy: NMDUC
         toggleCombobox(){
             this.isClickDropdownIcon = true
             this.isCombobox = !this.isCombobox
         },
 
+        //Click ra ngoài combobox, check biến phụ isClickDropdownIcon
+        //nếu biến phụ = true tức là đang click vào dropdown icon, vậy thì không đóng combobox và set lại biến phụ = false
+        //CreatedDate: 23/8/2022
+        //CreatedBy: NMDUC
         onCLickOutsideCombobox(e){
             console.log(e);
             if (this.isClickDropdownIcon === false) {
@@ -100,14 +138,33 @@ export default {
             }
         },
 
-    },
+        //thay đổi form set isFormchange = true
+        //CreatedBy: NMDUC
+        //CreatedDate: 21/8/2022
+        changeForm(){
+            this.$emit('changeForm')
+        },
+
+        //hàm validate tiền
+        // Ngày sửa: 13/7/2022
+        // Người sửa: NMDUC
+        validateMoney(money){
+            if (typeof money === 'number') {
+                money = Math.round(money);
+            }
+            return money
+                .toString()
+                .replace(/\D/g, "")
+                .replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+                }
+        },
 
     data(){
         return{
             myValue: "",
             isCombobox: false,
             isClickDropdownIcon: false,
-            isFocusingInput: false
+            isFocusingInput: false,
         }
     },
 
@@ -144,7 +201,10 @@ export default {
             default: false
         },
         options: Array,
-        checkFocus: Boolean
+        checkFocus: Boolean,
+        isString: Boolean,
+        isNumberInput: Boolean,
+        listCheck: Array
     },
 }
 </script>

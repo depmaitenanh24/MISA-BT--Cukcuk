@@ -21,9 +21,9 @@
                 <combo-input
                     :labelName = "'Thu thêm'"
                     :propName="'FoodHobbyFee'"
-                    :isDescriptionInput = "true"
                     :inputValue = "foodHobby.FoodHobbyFee"
                     :checkFocus = "checkFocus.FoodHobbyFee"
+                    :isNumberInput="true"
                     @setInputValue="setInputValue"
                     ></combo-input>
             </div>
@@ -55,16 +55,32 @@ export default {
         DButton
     },
 
+    //Khi khởi tạo, reset lại biến chủ
+    // Ngày sửa: 11/8/2022
+    // Người sửa: NMDUC
+    created(){
+        this.foodHobby = {}
+    },
+
     methods:{
+        //hàm truyền vào combo-input để set value cho foodHobby
+        // Ngày sửa: 13/8/2022
+        // Người sửa: NMDUC
         setInputValue(propName, value){
             this.foodHobby[propName] = value
             
         },
 
+        //Khi bấm hủy bỏ hoặc đóng form
+        // Ngày sửa: 13/8/2022
+        // Người sửa: NMDUC
         onClickCloseForm(){
             this.$emit('setIsFormFoodDetail', "FoodHobby", false)
         },
 
+        //Khi bấm cất, thực hiện validate và thêm mới
+        // Ngày sửa: 13/8/2022
+        // Người sửa: NMDUC
         async onSubmitClick(){
             this.validateForm()
             if (Object.keys(this.errMsg).length > 0) {
@@ -72,30 +88,39 @@ export default {
                 return
             }
 
+            //nếu trùng mở cảnh báo trùng, set title và error
             if(this.checkDuplicate() === false){
                 this.isAlertOpened = true
                 this.errMsg.FoodHobbyName = ErrMsgs.errMsg_FoodHobbyName_Duplicate
                 this.isError.FoodHobbyName = true
                 return
             }
+            //nếu dữ liệu hợp lệ để thêm
             try{
+                this.$emit('setIsLoading', true)
                 var res = await axios.post('http://localhost:5011/api/v1/FoodHobbys', this.foodHobby)
                 if(res.status === 201){
-                    console.log('success');
+                    this.$emit('showSuccessModal')
                 }
                 
             }
             catch(err){
-                console.log(err);
+                this.$emit('showErrorModal', err)
             }
+            //sau khi thêm mới thì gọi lại api của trường nhóm thứ ăn
+            //đóng form và gửi value lên component cha để set luôn cho input value vừa thêm
             finally{
                 this.$emit('callAPIDetail')
                 this.$emit('setIsFormFoodDetail', "FoodHobby", false)
                 this.$emit('setInputValue', this.indexSelected, this.foodHobby)
+                this.$emit('setIsLoading', false)
             }
             
         },
 
+        //check trùng tên nhóm thức ăn dựa vào danh sách gửi từ cha
+        // Ngày sửa: 13/8/2022
+        // Người sửa: NMDUC
         checkDuplicate(){
             this.foodHobbyList.forEach(hobby => {
                 if(this.foodHobby.FoodHobbyName === hobby.FoodHobbyName && this.foodHobby.FoodHobbyFee === hobby.FoodHobbyFee){
@@ -105,10 +130,16 @@ export default {
             return true
         },
 
+        //Khi bấm hủy, đóng form
+        // Ngày sửa: 13/8/2022
+        // Người sửa: NMDUC
         onCancelClick(){
             this.$emit('setIsFormFoodDetail', "FoodHobby", false)
         },
 
+        //validate trống
+        // Ngày sửa: 13/8/2022
+        // Người sửa: NMDUC
         validateForm(){
             const error = {};
             if(!this.foodHobby.FoodHobbyName){
@@ -129,6 +160,9 @@ export default {
             this.checkFocus[propName] = !this.checkFocus[propName]
         },
 
+        //đóng modal cảnh báo
+        // Ngày sửa: 9/8/2022
+        // Người sửa: NMDUC
         closeAlert(){
             this.isAlertOpened = false
         }

@@ -109,15 +109,15 @@ export default {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0px 10px;
     user-select: none;
+    padding: 0 15px;
   }
 
   .d-header input{
     background: #005082;
     border: none;
     outline: none;
-    height: 30px;
+    height: 32px;
     color: #fff;
     font-size: 11px;
   }
@@ -127,13 +127,15 @@ export default {
   }
 
   .d-header-left input{
+    width: 228px;
     min-width: 200px;
-    padding: 5px 45px 5px 10px;
+    padding: 5px 45px 5px 5px;
+    margin-right: 10px;
   }
 
   .d-header-left .filter{
     position: absolute;
-    right: 0;
+    right: 10px;
     top: 0;
     z-index: 1;
     cursor: pointer;
@@ -146,7 +148,7 @@ export default {
 
   .d-header .dropdown{
     position: absolute;
-    right: 25px;
+    right: 35px;
     top: 0;
     cursor: pointer;
     height: 100%;
@@ -181,6 +183,7 @@ export default {
     align-items: center;
     justify-content: center;
     height: 100%;
+    min-width: 400px;
   }
 
   .d-header-right .input-section{
@@ -188,9 +191,9 @@ export default {
   }
 
   .d-header-right input{
-    width: 165px;
+    width: 170px;
     min-width: 165px;
-    padding: 5px 45px 5px 10px;
+    padding: 5px 45px 5px 5px;
   }
 
   .d-header-right .dropdown{
@@ -221,7 +224,7 @@ export default {
     align-items: center;
     justify-content: center;
     margin-left: 50px;
-    font-size: 11px;
+    font-size: 13px;
     color: #fff;
   }
 
@@ -236,6 +239,7 @@ export default {
     justify-content: center;
     padding-right: 2px;
     margin-right: 5px;
+
   }
 
   .avatar-icon{

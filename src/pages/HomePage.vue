@@ -30,10 +30,9 @@ export default {
   }
 
   .d-right-container{
-    width: calc(100% - 200px);
+    width: calc(100% - 230px);
     height: 100%;
-    min-width: 700px;
+    min-width: 500px;
   }
-
 
 </style>
