@@ -4,7 +4,8 @@
             <div class="header header-name">Sở thích</div>
             <div class="header header-fee">Thu thêm</div>
         </li>
-        <li v-for="(option,index) in this.options" :key="index"  
+        <li v-for="(option,index) in this.optionFilter" 
+        :key="index" 
         :class="{'chose': isComboboxSelected[index]}" 
         @click="(e) => selectCombobox(e, option, index)">
             <div class="content hobby-name">{{option.FoodHobbyName}}</div>
@@ -14,29 +15,22 @@
 </template>
 <script>
 export default {
-    created(){
-      for (let i = 0; i < this.options.length; i++) {
-        if(this.inputValue.FoodHobbyName === this.options[i].FoodHobbyName && this.inputValue.FoodHobbyFee === this.options[i].FoodHobbyFee){
-          this.isComboboxSelected[i] = true
-          break;
+  //Khi inputValue thay đổi thì lọc dữ iệu
+    computed:{
+      optionFilter(){
+        if(this.inputValue && this.inputValue.FoodHobbyName){
+          var filterOptions = this.options.filter((x)=>x.FoodHobbyName.startsWith(this.inputValue.FoodHobbyName));
+          if(filterOptions.length > 0){
+            return filterOptions
+          }
+          else{
+            return this.options
+          }
+        }else{
+          return this.options;
         }
       }
-    },
-
-    watch:{
-      inputValue:{
-        handler: function(){
-            for (let i = 0; i < this.options.length; i++) {
-                if(this.inputValue.FoodHobbyName === this.options[i].FoodHobbyName && this.inputValue.FoodHobbyFee === this.options[i].FoodHobbyFee){
-                    this.isComboboxSelected[i] = true
-                    break;
-                }
-            }
-        },
-        deep: true,
-        immediate: true
-      }
-    },
+    },  
 
     props:{
         options: Array,
@@ -51,8 +45,8 @@ export default {
         // Ngày sửa: 1/8/2022
         // Người sửa: NMDUC
         selectCombobox(e, option,index){
-            this.$emit('toggleCombobox',e , this.indexSelected)
-            this.$emit(`setInputValue`, this.indexSelected, option)
+            this.$emit('toggleCombobox',e, this.indexSelected)
+            this.$emit(`setInputValue`, 'FoodHobbyName', this.indexSelected, option)
             for(let i = 0; i < this.options.length; i++){
               this.isComboboxSelected[i] = false
             }
@@ -62,7 +56,7 @@ export default {
 
     data(){
         return{
-            isComboboxSelected: []
+            isComboboxSelected: [],
         }
     },
 }

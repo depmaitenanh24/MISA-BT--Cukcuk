@@ -5,11 +5,10 @@
                 <p>CUKCUK - Quản lý nhà hàng</p>
             </div>
             <div class="modal-body">
-                <div :class="{'warning-icon' : modalType === 'warning' || modalType == 'duplicateFoodHobby', 'confrim-icon' : modalType === 'confirm-delete' || modalType === 'confirm-change'}"></div>
-                <p v-if="modalType === 'warning'">Mã &lt;<span>{{duplicateId}}</span>&gt; đã tồn tại trong hệ thống, vui lòng kiểm tra lại</p>
+                <div :class="{'warning-icon' : modalType === 'confirm-delete' || modalType == 'invalid', 'confrim-icon' : modalType === 'confirm-change'}"></div>
                 <p v-if="modalType === 'confirm-delete'">Bạn có chắc chắn muốn xóa món &lt;<span>{{deleteCode}}</span>&gt; không? </p>
                 <p v-if="modalType === 'confirm-change'">Dữ liệu đã bị thay đổi, bạn có muốn cất không</p>
-                <p v-if="modalType === 'duplicateFoodHobby'">Sở thích phục vụ không được phép trùng</p>
+                <p v-if="modalType === 'invalid'">{{warningErrorMsg}}</p>
             </div>
             <div class="modal-footer" :class="{'footer-change' : modalType === 'confirm-change'}">
                 <slot name="button-section"></slot>
@@ -32,13 +31,13 @@ export default {
     },
 
     props:{
-        duplicateId: String,
         deleteCode: String,
         modalType:{
             type: String,
             require: false,
             default: 'warning'
-        }
+        },
+        warningErrorMsg: Array
     }
 }
 </script>

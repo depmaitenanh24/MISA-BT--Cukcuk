@@ -3,8 +3,8 @@
         <div class="confirm-modal" :class="{'error-modal' : isUpdateError}" v-if="isConfirmModal">
             <div class="modal-body">
                 <div class="confirm-icon" :class="{'error-modal' : isUpdateError}"></div>
-                <p v-show="!isUpdateError">{{successMsg}}</p>
-                <p v-show="isUpdateError" v-for="(res, index) in listErrorResponse" :key="index">{{res}}</p>
+                <p v-show="isUpdateError === false">{{successMsg}}</p>
+                <p v-show="isUpdateError === true" v-for="(res, index) in listErrorResponse" :key="index">{{res}}</p>
             </div>
             <div class="modal-footer" v-show="isUpdateError">
                 <d-button btnText = "Đóng" @click="closeIsConfirmModal()"></d-button>
@@ -26,6 +26,12 @@ export default {
 
     components: {
         DButton
+    },
+
+    methods: {
+        closeIsConfirmModal(){
+            this.$emit('setIsConfirmModal', false)
+        }
     }
 }
 </script>
@@ -39,6 +45,7 @@ export default {
         background: #fff;
         border: 1px solid rgba(1, 145, 96, 0.3);
         z-index: 10;
+        font-size: 13px;
     }
 
     .drop-enter-active {

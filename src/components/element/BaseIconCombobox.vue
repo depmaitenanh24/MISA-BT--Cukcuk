@@ -1,55 +1,32 @@
 <template>
-    <ul :class="{'dropdown-form' : isDropdownForm}">
-        <li v-for="(option,index) in this.options" :key="index" v-show="isAutocomplete[index]" 
-        :class="{'chose': isComboboxSelected[index], 'dropdown-form' : isDropdownForm}" 
+    <ul>
+        <li v-for="(option,index) in this.options" :key="index"  
+        :class="{'chose': isComboboxSelected[index]}" 
         @click="selectCombobox(option, index)">
-            {{option}}
+            <span>{{option.symbol}}</span>{{option.value}}
         </li>
     </ul>
 </template>
 <script>
 export default {
-  created(){
-    if(this.isDropdownForm === false){
-      this.isAutocomplete = Array(3).fill(true)
-    }
-  },
-
-  watch:{
-    //Khi input bị thay đổi, autocomplete cho input
-    inputValue:function(){
-      if(this.isDropdownForm === true){
-        for (let i = 0; i < this.options.length; i++) {
-          //nếu inputValue === option thì hiển thị chọn cho option
-          if(this.inputValue === this.options[i]){
-            this.isComboboxSelected[i] = true
-            break;
-          }
-        }
-        for (let i = 0; i < this.options.length; i++){
-          //Nếu option bắt đầu bằng input, hiển thị ra, nếu không ẩn đi
-          if(this.options[i].startsWith(this.inputValue)){
-            this.isAutocomplete[i] = true
-          }
-          else{
-            this.isAutocomplete[i] = false
-          }
-        }
-        //Nếu không có option nào được hiển thị thì hiển thị tất cả
-        if(this.isAutocomplete.filter((value) => value === true).length <= 1){
-          this.isAutocomplete = Array(this.options.length).fill(true)
+    created(){
+      for (let i = 0; i < this.options.length; i++) {
+        if(this.inputValue === this.options[i]){
+          this.isComboboxSelected[i] = true
+          break;
         }
       }
     },
 
-      options: {
-        handler: function(){
-          for (let i = 0; i < this.options.length; i++){
-            this.isAutocomplete[i] = true
+    watch:{
+      inputValue:function(){
+          for (let i = 0; i < this.options.length; i++) {
+            if(this.inputValue === this.options[i]){
+              this.isComboboxSelected[i] = true
+              break;
+            }
           }
         },
-        deep: true
-      }
     },
 
     props:{
@@ -57,8 +34,6 @@ export default {
         inputValue: {
             type: String,
             default: ""},
-        isDropdownForm: Boolean,
-        isTableDropdown: Boolean
     },
 
     methods:{
@@ -67,9 +42,6 @@ export default {
         // Người sửa: NMDUC
         selectCombobox(option,index){
           this.$emit(`toggleCombobox`)
-          if(this,this.isDropdownForm === true){
-            this.$emit('changeForm')
-          }
           this.$emit(`setInputValue`,option)
           for(let i = 0; i < this.options.length; i++){
               this.isComboboxSelected[i] = false
@@ -81,7 +53,6 @@ export default {
     data(){
         return{
             isComboboxSelected: [],
-            isAutocomplete: []
         }
     },
 }
@@ -93,7 +64,7 @@ export default {
       max-height: 300px;
       overflow: auto;
       width: 100%;
-      top: 30px;
+      top: 23px;
       z-index: 1;
       transition: 0.25s ease;
       font-size: 11px;
@@ -139,5 +110,10 @@ export default {
   ul li.chose {
     background: #c1ddf1!important;
     cursor: auto!important;
+  }
+
+  span{
+    width: 10px;
+    margin-right: 8px;
   }
 </style>

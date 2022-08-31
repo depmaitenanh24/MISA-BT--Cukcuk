@@ -32,7 +32,8 @@
     <modal-alert
         v-if="isAlertOpened"
         :duplicateId="duplicateId"
-        :modalType="'warning'">
+        :modalType="'invalid'"
+        :warningErrorMsg="warningErrorMsg">
             <template #button-section>
                 <d-button btnText="Đồng ý" @click="closeAlert()"></d-button>
             </template>
@@ -44,6 +45,7 @@
 import BaseForm from "../element/BaseForm.vue";
 import ComboInput from "../element/ComboInput.vue";
 import ErrMsgs from "../../js/Resources/ErrMsgs";
+import API_HEADER from "../../js/Resources/Api";
 import ModalAlert from "./ModalAlert.vue";
 import DButton from "../element/DButton.vue";
 import axios from 'axios';
@@ -91,14 +93,20 @@ export default {
             //nếu trùng mở cảnh báo trùng, set title và error
             if(this.checkDuplicate() === false){
                 this.isAlertOpened = true
+                this.warningErrorMsg = ErrMsgs.errMsg_FoodHobbyName_Duplicate
                 this.errMsg.FoodHobbyName = ErrMsgs.errMsg_FoodHobbyName_Duplicate
                 this.isError.FoodHobbyName = true
                 return
             }
             //nếu dữ liệu hợp lệ để thêm
+            //validate lại trường thu thêm
+            if(this.foodHobby.FoodHobbyFee){
+                this.foodHobby.FoodHobbyFee = this.foodHobby.FoodHobbyFee.toString().replaceAll('.', '')
+                this.foodHobby.FoodHobbyFee = Number.parseFloat(this.foodHobby.FoodHobbyFee)
+            }
             try{
                 this.$emit('setIsLoading', true)
-                var res = await axios.post('http://localhost:5011/api/v1/FoodHobbys', this.foodHobby)
+                var res = await axios.post(`${API_HEADER.Api_header}FoodHobbys`, this.foodHobby)
                 if(res.status === 201){
                     this.$emit('showSuccessModal')
                 }
@@ -112,7 +120,13 @@ export default {
             finally{
                 this.$emit('callAPIDetail')
                 this.$emit('setIsFormFoodDetail', "FoodHobby", false)
-                this.$emit('setInputValue', this.indexSelected, this.foodHobby)
+                if(this.foodHobby.FoodHobbyFee){
+                    this.foodHobby.FoodHobbyFee = this.validateMoney(this.foodHobby.FoodHobbyFee)
+                }
+                else{
+                    this.foodHobby.FoodHobbyFee = '0'
+                }
+                this.$emit('setInputValue', 'FoodHobbyName', this.indexSelected, this.foodHobby)
                 this.$emit('setIsLoading', false)
             }
             
@@ -165,6 +179,22 @@ export default {
         // Người sửa: NMDUC
         closeAlert(){
             this.isAlertOpened = false
+        },
+
+        //hàm validate tiền
+        // Ngày sửa: 13/7/2022
+        // Người sửa: NMDUC
+        validateMoney(money){
+            if(!money && money != 0){
+                return money
+            }
+            if (typeof money === 'number') {
+                money = Math.round(money);
+            }
+            return money
+                .toString()
+                .replace(/\D/g, "")
+                .replace(/\B(?=(\d{3})+(?!\d))/g, ".");
         }
     },
 
@@ -176,6 +206,7 @@ export default {
             checkFocus: {},
             isAlertOpened: false,
             duplicateId: "",
+            warningErrorMsg: ""
         }
     },
 

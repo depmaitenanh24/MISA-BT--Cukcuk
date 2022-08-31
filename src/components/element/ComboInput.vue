@@ -4,7 +4,7 @@
         <div class="label-section">
             <label>{{labelName}}<span v-if="isMandaInput">(*)</span></label>
         </div>
-        <div class="input-container" v-click-outside="onFocusOutInput">
+        <div class="input-container">
             <div class="icon-container add-container" v-if="isDropdownInput" @click="this.$emit('setFormState', propName, true)">
                 <div class="add-icon tool-icon"></div>
             </div>
@@ -12,26 +12,27 @@
                 <div class="dropdown-icon tool-icon"></div>
             </div>
             <input v-if="!isDescriptionInput"
-            :class="{'error' : isError}"
+            :class="{'error' : isError, 'number-input' : isNumberInput}"
             :value="myValue"
-            @focusin="onFocusingInput"
+            @focusout="onFocusOutInput()"
             @input="(e) => onTypingInput(e)"
             ref="input"/>
             <textarea v-if="isDescriptionInput"
             :class="{'error' : isError}"
             :value="myValue"
             @focusin="onFocusingInput"
+            @focusout="onFocusOutInput()"
             @input="(e) => onTypingInput(e)"
             ref="input">
             </textarea>
             <base-combobox 
-            v-if="isCombobox"
+            v-if="isDropdownInput"
+            v-show="isCombobox"
             :isDropdownForm="true"
             :inputValue="myValue"
             :options="options"
             v-click-outside="(e) => onCLickOutsideCombobox(e)"
             @changeForm="changeForm"
-            @focusout="onFocusOutInput(e)"
             @setInputValue="setInputValue"
             @toggleCombobox="toggleCombobox"
             />
@@ -63,12 +64,6 @@ export default {
     },
 
     methods: {
-        //Khi focus vào input đặt biến = true để bắt clickoutside thì phải focus trước
-        //CreatedDate: 23/8/2022
-        //CreatedBy: NMDUC
-        onFocusingInput(){
-            this.isFocusingInput = true
-        },
 
         //Khi gõ vào ô input thì gửi data về component cha: FoodDetails
         //CreatedDate: 23/8/2022
@@ -78,6 +73,7 @@ export default {
             if(this.isNumberInput){
                 this.myValue = this.validateMoney(this.myValue)
             }
+            this.openCombobox()
             this.$emit('changeForm')
             this.$emit('setInputValue', this.propName, this.myValue)
         },
@@ -90,21 +86,16 @@ export default {
                 this.myValue = this.myValue.trim()
                 this.$emit('setInputValue', this.propName, this.myValue)
             }
-            if(this.isFocusingInput === true){
-                if((this.isMandaInput === true && (!this.myValue || this.myValue === ""))){
-                    this.$emit('validateMandaInput', this.propName, true, 'Null')
-                }
-                else if(this.propName === "FoodName"){
-                    this.$emit('generateNewCode', this.myValue)
-                }
-                else if(this.options && this.myValue && !this.options.includes(this.myValue)){
-                    this.$emit('validateMandaInput', this.propName, true, 'Invalid')
-                }
-                else{
-                    this.$emit('validateMandaInput', this.propName, false, '')
-                }
-                this.isFocusingInput = false
+            if((this.isMandaInput === true && (!this.myValue || this.myValue === ""))){
+                this.$emit('validateMandaInput', this.propName, true, 'Null')
             }
+            else{
+                this.$emit('validateMandaInput', this.propName, false, ' ')
+            }
+            if(this.propName === "FoodName" && (this.myValue || this.myValue !== "")){
+                this.$emit('generateNewCode', this.myValue)
+            }
+            this.isFocusingInput = false
             
         },
 
@@ -114,6 +105,7 @@ export default {
         setInputValue(value){
             this.myValue = value
             this.$emit('setInputValue', this.propName, value)
+            this.$emit('setErrorInput', this.propName, false)
         },
 
         //đóng/mở combobox, đặt biến phụ = true nếu đang click vào dropdown-icon
@@ -122,6 +114,14 @@ export default {
         toggleCombobox(){
             this.isClickDropdownIcon = true
             this.isCombobox = !this.isCombobox
+        },
+        
+        //mở combobox, đặt biến phụ = true 
+        //CreatedDate: 23/8/2022
+        //CreatedBy: NMDUC
+        openCombobox(){
+            this.isClickDropdownIcon = true
+            this.isCombobox = true
         },
 
         //Click ra ngoài combobox, check biến phụ isClickDropdownIcon
@@ -149,6 +149,9 @@ export default {
         // Ngày sửa: 13/7/2022
         // Người sửa: NMDUC
         validateMoney(money){
+            if(!money && money !== 0){
+                return
+            }
             if (typeof money === 'number') {
                 money = Math.round(money);
             }
@@ -264,6 +267,10 @@ export default {
         font-size: 12px;
     }
 
+    input.number-input{
+        text-align: right;
+    }
+
     .input-section.description-input textarea{
         resize: none;
         width: 100%;
@@ -284,12 +291,16 @@ export default {
 
     .icon-container{
         position: absolute;
-        top: calc(50% - 8px);
-        width: 16px;
-        height: 16px;
+        top: 0;
+        width: 20px;
+        height: 100%;
         display: flex;
         align-items: center;
         justify-content: center;
+    }
+
+    .icon-container.dropdown-container:hover{
+        background: #c9c9c9;
     }
 
     .icon-container.add-container{

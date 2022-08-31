@@ -1,9 +1,11 @@
 <template>
 <div class="table-section">
     <modal-success
+    :listErrorResponse="listErrorResponse"
     :isUpdateError="isUpdateError"
     :isConfirmModal="isConfirmModal"
     :successMsg="successMsg"
+    @setIsConfirmModal="setIsConfirmModal"
     />
     <div class="tool-bar">
         <tool-bar-button btnText = "Thêm" @click="onClickAddButton()">
@@ -33,7 +35,7 @@
             </template>
         </tool-bar-button>
         <div class="barrier"></div>
-        <tool-bar-button btnText = "Nạp">
+        <tool-bar-button btnText = "Nạp" @click="callPagingAPI()">
             <template #icon>
                 <div class="reload-icon"></div>
             </template>
@@ -43,110 +45,147 @@
                 <div class="help-icon"></div>
             </template>
         </tool-bar-button>
+        <tool-bar-button btnText = "Xuất khẩu" @click="onExportClick()">
+            <template #icon>
+                <div class="export-icon"></div>
+            </template>
+        </tool-bar-button>
     </div>
     <div class="table-container">
         <table>
             <thead>
                 <tr>
-                    <th>Loại món
-                        <input-icon 
-                        :icon = "'dropdown-icon'"
-                        @setInputValue = "setTypeFilterInputValue"
-                        @onEnterInput = "onEnterFilterInput">
-                            <template #dropdown-icon>
-                                <div class="dropdown-container">
-                                    <div class="dropdown-icon"></div>
-                                </div>
-                            </template>
-                        </input-icon>
-                    </th>
-                    <th style="min-width: 200px">Mã món
+                    <th>
+                        <div class="header-text-container" @click="setSortBy('FoodType')">
+                            Loại món
+                            <div class="sort-icon-container" v-if="sortBy === 'FoodType'">
+                                <div class="sort-asc-icon" v-if="sortType === 'ASC'"></div>
+                                <div class="sort-desc-icon" v-if="sortType === 'DESC'"></div>
+                            </div>
+                        </div>
                         <input-icon 
                         :icon = "'describe-icon'"
-                        @setInputValue = "setCodeFilterInputValue"
-                        @onEnterInput = "onEnterFilterInput">
-                            <template #describe-icon>
-                                <div class="icon-container">
-                                    <p style="padding-top: 6px;">*</p>
-                                </div>
-                            </template>
+                        :propName = "'FoodType'"
+                        :isComboboxInput="true"
+                        :inputType="0"
+                        @callFilterApi = "callFilterApi"
+                        @setIsFilterChange="setIsFilterChange">
                         </input-icon>
                     </th>
-                    <th style="min-width: 250px">Tên món
-                    <input-icon 
-                    @setInputValue = "setNameFilterInputValue"
-                    @onEnterInput = "onEnterFilterInput" 
-                    :icon = "'describe-icon'">
-                        <template #describe-icon>
-                                <div class="icon-container">
-                                    <p style="padding-top: 6px;">*</p>
-                                </div>
-                            </template>
-                    </input-icon></th>
-                    <th>Nhóm thực đơn
+                    <th style="min-width: 200px">
+                        <div class="header-text-container" @click="setSortBy('FoodCode')">
+                            Mã món
+                            <div class="sort-icon-container" v-if="sortBy === 'FoodCode'">
+                                <div class="sort-asc-icon" v-if="sortType === 'ASC'"></div>
+                                <div class="sort-desc-icon" v-if="sortType === 'DESC'"></div>
+                            </div>
+                        </div>
                         <input-icon 
                         :icon = "'describe-icon'"
-                        @setInputValue = "setGroupFilterInputValue"
-                        @onEnterInput = "onEnterFilterInput" >
-                            <template #describe-icon>
-                                <div class="icon-container">
-                                    <p style="padding-top: 6px;">*</p>
-                                </div>
-                            </template>
+                        :propName = "'FoodCode'"
+                        :isComboboxInput="true"
+                        :inputType="0"
+                        @callFilterApi = "callFilterApi"
+                        @setIsFilterChange="setIsFilterChange">
                         </input-icon>
                     </th>
-                    <th>Đơn vị tính
-                        <input-icon :icon = "'describe-icon'">
-                            <template #describe-icon>
-                                <div class="icon-container">
-                                    <p style="padding-top: 6px;">*</p>
-                                </div>
-                            </template>
+                    <th style="min-width: 250px">
+                        <div class="header-text-container" @click="setSortBy('FoodName')">
+                            Tên món
+                            <div class="sort-icon-container" v-if="sortBy === 'FoodName'">
+                                <div class="sort-asc-icon" v-if="sortType === 'ASC'"></div>
+                                <div class="sort-desc-icon" v-if="sortType === 'DESC'"></div>
+                            </div>
+                        </div>
+                        <input-icon 
+                        :isComboboxInput="true"
+                        :icon = "'describe-icon'"
+                        :propName = "'FoodName'"
+                        :inputType="0"
+                        @callFilterApi = "callFilterApi"
+                        @setIsFilterChange="setIsFilterChange" 
+                        >
                         </input-icon>
                     </th>
-                    <th>Giá bán
-                        <input-icon :icon = "'describe-icon'">
-                            <template #describe-icon>
-                                <div class="icon-container">
-                                    <p style="padding-top: 6px;">*</p>
-                                </div>
-                            </template>
+                    <th>
+                        <div class="header-text-container" @click="setSortBy('FoodGroupName')">
+                            Nhóm thực đơn
+                            <div class="sort-icon-container" v-if="sortBy === 'FoodGroupName'">
+                                <div class="sort-asc-icon" v-if="sortType === 'ASC'"></div>
+                                <div class="sort-desc-icon" v-if="sortType === 'DESC'"></div>
+                            </div>
+                        </div>
+                        <input-icon 
+                        :icon = "'describe-icon'"
+                        :isComboboxInput="true"
+                        :propName = "'FoodGroupName'"
+                        :inputType="0"
+                        @callFilterApi = "callFilterApi" 
+                        @setIsFilterChange="setIsFilterChange">
                         </input-icon>
                     </th>
-                    <th style="min-width: 200px">Thay đổi theo thời giá
+                    <th>
+                        <div class="header-text-container" @click="setSortBy('FoodUnitName')">
+                            Đơn vị tính
+                            <div class="sort-icon-container" v-if="sortBy === 'FoodUnitName'">
+                                <div class="sort-asc-icon" v-if="sortType === 'ASC'"></div>
+                                <div class="sort-desc-icon" v-if="sortType === 'DESC'"></div>
+                            </div>
+                        </div>
+                        <input-icon 
+                        :icon = "'describe-icon'"
+                        :isComboboxInput="true"
+                        :inputType="0"
+                        :propName = "'FoodUnitName'"
+                        @callFilterApi = "callFilterApi"
+                        @setIsFilterChange="setIsFilterChange" 
+                        >
+                        </input-icon>
+                    </th>
+                    <th>
+                        <div class="header-text-container" @click="setSortBy('FoodSellPrice')">
+                            Giá bán
+                            <div class="sort-icon-container" v-if="sortBy === 'FoodSellPrice'">
+                                <div class="sort-asc-icon" v-if="sortType === 'ASC'"></div>
+                                <div class="sort-desc-icon" v-if="sortType === 'DESC'"></div>
+                            </div>
+                        </div>
+                        <input-icon 
+                        :icon = "'describe-icon'"
+                        :isComboboxInput="true"
+                        :inputType="1"
+                        :propName = "'FoodSellPrice'"
+                        @callFilterApi = "callFilterApi" 
+                        @setIsFilterChange="setIsFilterChange" 
+                        >
+                        </input-icon>
+                    </th>
+                    <th style="min-width: 200px">
+                        <div class="header-text-container" @click="setSortBy('FoodSellPrice')">
+                            Thay đổi theo thời giá
+                        </div>
                         <input-icon :icon = "'dropdown-icon'">
-                            <template #dropdown-icon>
-                                <div class="dropdown-container">
-                                    <div class="dropdown-icon"></div>
-                                </div>
-                            </template>
                         </input-icon>
                     </th>
-                    <th style="min-width: 200px">Điều chỉnh giá tự do
+                    <th style="min-width: 200px">  
+                        <div class="header-text-container" @click="setSortBy('FoodSellPrice')">
+                            Điều chỉnh giá tự do 
+                        </div>
                         <input-icon :icon = "'dropdown-icon'">
-                            <template #dropdown-icon>
-                                <div class="dropdown-container">
-                                    <div class="dropdown-icon"></div>
-                                </div>
-                            </template>
                         </input-icon>
                     </th>
-                    <th style="min-width: 200px">Hiển thị trên thực đơn
+                    <th style="min-width: 200px">
+                        <div class="header-text-container" @click="setSortBy('FoodSellPrice')">
+                            Hiển thị trên thực đơn
+                        </div>
                         <input-icon :icon = "'dropdown-icon'">
-                            <template #dropdown-icon>
-                                <div class="dropdown-container">
-                                    <div class="dropdown-icon"></div>
-                                </div>
-                            </template>
                         </input-icon>
                     </th>
-                    <th>Ngừng bán
+                    <th>
+                        <div class="header-text-container" @click="setSortBy('FoodSellPrice')">
+                            Ngừng bán
+                        </div>
                         <input-icon :icon = "'dropdown-icon'">
-                            <template #dropdown-icon>
-                                <div class="dropdown-container">
-                                    <div class="dropdown-icon"></div>
-                                </div>
-                            </template>
                         </input-icon>
                     </th>
                 </tr>
@@ -250,7 +289,7 @@
     :modalType="'confirm-delete'"
     >
         <template #button-section>
-            <d-button style="margin-right: 10px" btnText="Không" @click="setIsAlertOpened(false)()"></d-button>
+            <d-button style="margin-right: 10px" btnText="Không" @click="setIsAlertOpened(false)"></d-button>
             <d-button btnText="Có" @click="deleteData()"></d-button>
         </template>
     </modal-alert>
@@ -271,6 +310,7 @@ import ModalAlert from "./ModalAlert.vue";
 import DButton from "../element/DButton.vue";
 import ModalSuccess from "../element/ModalSuccess.vue";
 import SuccessMsg from "../../js/Resources/SuccessMsg";
+import API_HEADER from "../../js/Resources/Api";
 import axios from "axios";
 export default {
     async created(){
@@ -323,6 +363,30 @@ export default {
     },
 
     methods:{
+
+        // export dữ liệu từ file excel
+        // Ngày sửa: 29/8/2022
+        // Người sửa: NMDUC
+        onExportClick(){
+            try{
+                axios({
+                    url: `${API_HEADER.Api_header}Foods/export`,
+                    method: 'GET',
+                    responseType: 'blob',
+                }).then((response) => {
+                    var fileURL = window.URL.createObjectURL(new Blob([response.data]));
+                    var fileLink = document.createElement('a');
+                    fileLink.href = fileURL;
+                    fileLink.setAttribute('download', 'DanhSachMonAn.xlsx');
+                    document.body.appendChild(fileLink);
+                    fileLink.click();
+                });
+            }
+            catch(err){
+                console.log(err);
+            }
+        },
+
         //Mở combobox phân trang
         // Ngày sửa: 10/8/2022
         // Người sửa: NMDUC
@@ -337,36 +401,7 @@ export default {
             this.pageSize = value
             this.callPagingAPI()
         },
-
-        //Set giá trị cho tìm kiếm theo nhóm thức ăn, gửi vào component inputIcon
-        // Ngày sửa: 15/8/2022
-        // Người sửa: NMDUC
-        setGroupFilterInputValue(value){
-            this.groupFilter = value
-        },
-
-        //Set giá trị cho tìm kiếm theo mã thức ăn, gửi vào component inputIcon
-        // Ngày sửa: 15/8/2022
-        // Người sửa: NMDUC
-        setCodeFilterInputValue(value){
-            this.codeFilter = value
-        },
-
-        //Set giá trị cho tìm kiếm theo tên thức ăn, gửi vào component inputIcon
-        // Ngày sửa: 15/8/2022
-        // Người sửa: NMDUC
-        setNameFilterInputValue(value){
-            this.nameFilter = value
-        },
-
-        //Set giá trị cho tìm kiếm theo loại thức ăn, gửi vào component inputIcon
-        // Ngày sửa: 15/8/2022
-        // Người sửa: NMDUC
-        setTypeFilterInputValue(value){
-            this.typeFilter = value
-            
-        },
-
+       
         //Chọn dòng đang được lựa chọn, dòng sẽ có màu xanh đậm
         // Ngày sửa: 18/8/2022
         // Người sửa: NMDUC
@@ -376,12 +411,42 @@ export default {
             this.currentRowSelected.code = foodCode
         },
 
-        //Khi bấm enter tại các input tìm kiếm, gọi api phân trang
+        // gọi api phân trang khi thêm vào 1 trường filter rồi ấn enter hoặc chọn cách lọc
         // Ngày sửa: 15/8/2022
         // Người sửa: NMDUC
-        onEnterFilterInput(){
+        callFilterApi(){
             this.currentPage = 1
             this.pageSize = 25
+            this.filterObjects.forEach((object) => {
+                if(object.inputType === 1){
+                    object.value = object.value.toString().replace('.', '')
+                }
+            })
+            if(this.isFilterChange === true){
+                this.callPagingAPI()
+            }
+        },
+        
+        // set giá trị cho biến isFilter change để kiểm tra các input có sự thay đỏi thì mới gọi API
+        // Ngày sửa: 15/8/2022
+        // Người sửa: NMDUC
+        setIsFilterChange(state, value){
+            this.isFilterChange = state
+            this.filterObjects = this.filterObjects.filter(item => item.colName !== value.colName)
+            this.filterObjects.push(value)
+        },
+
+        setSortBy(propName){
+            this.sortBy = propName
+            if(!this.sortType){
+                this.sortType = 'ASC'
+            }
+            else if(this.sortType === 'ASC'){
+                this.sortType = 'DESC'
+            }
+            else{
+                this.sortType = 'ASC'
+            }
             this.callPagingAPI()
         },
 
@@ -492,9 +557,17 @@ export default {
         // Ngày sửa: 15/8/2022
         // Người sửa: NMDUC
         showErrorModal(err){
+            console.log(err);
+            this.isUpdateError = true
             this.listErrorResponse = err.response.data.data.errors
             this.isConfirmModal = true
-            this.isUpdateError = true
+        },
+
+        // Mở/Đóng modal-success, truyền vào trong modal
+        // Ngày sửa: 15/8/2022
+        // Người sửa: NMDUC
+        setIsConfirmModal(state){
+            this.isConfirmModal = state
         },
 
         //đếm ngược cho mdal thêm mới thành công
@@ -515,7 +588,7 @@ export default {
             this.isLoading = true
             //Gửi yêu cầu
             try{
-                var res = await axios.post("http://localhost:5011/api/v1/Foods", newFood)
+                var res = await axios.post(`${API_HEADER.Api_header}Foods`, newFood)
             if(res.status === 201){
                 this.isUpdateError = false
                 this.countdownConfirmModal();
@@ -539,7 +612,7 @@ export default {
             this.isLoading = true
             //Gửi yêu cầu
             try{
-                var res = await axios.put("http://localhost:5011/api/v1/Foods", foodUpdate)
+                var res = await axios.put(`${API_HEADER.Api_header}Foods`, foodUpdate)
             if(res.status === 201){
                 this.isUpdateError = false
                 this.countdownConfirmModal();
@@ -561,7 +634,7 @@ export default {
         async deleteData(){
             this.isLoading = true
             try{
-                var res = await axios.delete(`http://localhost:5011/api/v1/Foods?entityId=${this.currentRowSelected.id}`)
+                var res = await axios.delete(`${API_HEADER.Api_header}Foods?entityId=${this.currentRowSelected.id}`)
             if(res.status === 200){
                 this.isUpdateError = false
                 this.countdownConfirmModal();
@@ -581,7 +654,7 @@ export default {
             this.isLoading = true
             var me = this
 
-            var apiStr = "http://localhost:5011/api/v1/Foods/filter?";
+            var apiStr = `${API_HEADER.Api_header}Foods/filter?`;
             //Hoàn thanhd api dựa vào tham số truyền vào
             if(this.currentPage){
                 apiStr+= `pageIndex=${this.currentPage}`
@@ -589,20 +662,15 @@ export default {
             if(this.pageSize){
                 apiStr+= `&pageSize=${this.pageSize}`
             }
-            if(this.groupFilter){
-                apiStr+= `&GroupFilter=${this.groupFilter}`
+            if(this.sortBy){
+                apiStr+= `&sortBy=${this.sortBy}`
             }
-            if(this.codeFilter){
-                apiStr+= `&CodeFilter=${this.codeFilter}`
-            }
-            if(this.nameFilter){
-                apiStr+= `&NameFilter=${this.nameFilter}`
-            }
-            if(this.typeFilter){
-                apiStr+= `&TypeFilter=${this.typeFilter}`
+            if(this.sortType){
+                apiStr+= `&sortType=${this.sortType}`
             }
             try{
-                var res = await axios.get(apiStr)
+                console.log(apiStr, this.filterObjects);
+                var res = await axios.post(apiStr, this.filterObjects)
                 me.foodList = res.data.Data
                 //set tổng số bản ghi, bản ghi hiển thị
                 this.totalRecord = res.data.TotalRecord
@@ -635,8 +703,42 @@ export default {
             if(this.foodList[0]){
                 this.currentRowSelected = {index: 0, id: this.foodList[0].FoodId, code: this.foodList[0].FoodCode}
             }
+            this.foodList.forEach(food => {
+                food.FoodSellPrice = this.validateMoney(food.FoodSellPrice)
+                food.FoodMakePrice = this.validateMoney(food.FoodMakePrice)
+            })
+            
+            this.isFilterChange = false
             this.isLoading = false
         },
+
+        //hàm validate tiền
+        // Ngày sửa: 26/8/2022
+        // Người sửa: NMDUC
+        validateMoney(money){
+            if(!money && money != 0){
+                return
+            }
+            if (typeof money === 'number') {
+                money = Math.round(money);
+            }
+            //validate cả phần thập phân
+            // if (typeof money === 'number') {
+            //     money = money.toString()
+            //     if(money.includes('.')){
+            //         money = money.split('.')
+            //         var intPart = money[0].toString()
+            //                             .replace(/\D/g, "")
+            //                             .replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+            //         var decPart = money[1]
+            //         return intPart + ',' + decPart
+            //     }
+            // }
+            return money
+                .toString()
+                .replace(/\D/g, "")
+                .replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+        }
     },
 
     data(){
@@ -668,7 +770,11 @@ export default {
             isUpdateError: false,
             isTableUpdated: false,
             listErrorResponse: [],
-            successMsg: SuccessMsg.success_Msg
+            successMsg: SuccessMsg.success_Msg,
+            filterObjects: [], 
+            sortBy: "",
+            sortType: "",
+            isFilterChange: false
         }
     }
 }
@@ -741,6 +847,13 @@ export default {
         margin-right: 4px;
     }
 
+    .tool-bar .export-icon{
+        background: url('https://cdn2-new.cukcuk.vn/QLNH/resources/Image/excel_97_24.png');
+        width: 16px;
+        height: 16px;
+        margin-right: 4px;
+    }
+
     .tool-bar button{
         margin-right: 5px;
     }
@@ -778,42 +891,34 @@ export default {
     }
 
     .table-container th {
-        height: 50px;
+        height: 60px;
         text-align: center;
         min-width: 150px;
         font-weight: normal;
-        padding: 7px 2px 0 2px;
+        padding: 0px 2px;
     }
 
-    .table-container th .icon-container{
-        height: 100%;
-        width: 22px;
-        position: absolute;
-        left: 0;
-        top: 0;
+    th .header-text-container{
+        height: 38px;
         display: flex;
         align-items: center;
         justify-content: center;
-        border-right: 2px solid #ccc;
-        cursor: pointer;
     }
 
-    .table-container th .dropdown-container{
-        height: 100%;
-        width: 22px;
-        position: absolute;
-        right: 0;
-        top: 0;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border-left: 2px solid #ccc;
+    th .sort-icon-container{
+        margin-left: 5px;
     }
 
-    .table-container th .dropdown-icon{
-        background: url('../../assets/img/IconSprites/trigger.png') no-repeat -51px -9px;
-        width: 8px;
-        height: 4px;
+    th .sort-asc-icon{
+        background: url('../../assets/img/sort_asc.png') no-repeat -3px -2px;
+        width: 10px;
+        height: 12px;
+    }
+
+    th .sort-desc-icon{
+        background: url('../../assets/img/sort_desc.png') no-repeat -3px -2px;
+        width: 10px;
+        height: 12px;
     }
 
     .table-container td {

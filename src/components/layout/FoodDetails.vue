@@ -37,6 +37,7 @@
                     @setInputValue="setInputValue"
                     @validateMandaInput = "validateMandaInput"
                     @generateNewCode="generateNewCode"
+                    @setErrorInput="setErrorInput"
                     ></combo-input>
                     <combo-input
                     name = "FoodCode"
@@ -52,6 +53,7 @@
                     @changeForm="changeForm"
                     @setInputValue="setInputValue"
                     @validateMandaInput = "validateMandaInput"
+                    @setErrorInput="setErrorInput"
                     ></combo-input>
                     <combo-input
                     name = "FoodGroupName"
@@ -69,6 +71,7 @@
                     @setInputValue="setInputValue"
                     @setFormState="setIsFormFoodDetail"
                     @validateMandaInput = "validateMandaInput"
+                    @setErrorInput="setErrorInput"
                     ></combo-input>
                     <combo-input
                     name = "FoodUnitName"
@@ -87,6 +90,7 @@
                     @setInputValue="setInputValue"
                     @validateMandaInput = "validateMandaInput"
                     @setFormState="setIsFormFoodDetail"
+                    @setErrorInput="setErrorInput"
                     ></combo-input>
                     <combo-input
                     name = "FoodSellPrice"
@@ -103,6 +107,7 @@
                     @changeForm="changeForm"
                     @setInputValue="setInputValue"
                     @validateMandaInput = "validateMandaInput"
+                    @setErrorInput="setErrorInput"
                     ></combo-input>
                     <combo-input
                     name = "FoodMakePrice"
@@ -117,6 +122,7 @@
                     :isNumberInput="true"
                     @changeForm="changeForm"
                     @setInputValue="setInputValue"
+                    @setErrorInput="setErrorInput"
                     ></combo-input>
                     <combo-input
                     name = "Description"
@@ -148,6 +154,7 @@
                     @setInputValue="setInputValue"
                     @setFormState="setIsFormFoodDetail"
                     @validateMandaInput = "validateMandaInput"
+                    @setErrorInput="setErrorInput"
                     ></combo-input>
                     <div class="showOnMenu">
                         <the-checkbox></the-checkbox>
@@ -162,17 +169,27 @@
                                 <div class="symbol-icon"></div>
                                 <p>Biểu tượng</p>
                             </div>
-                            <img src="../../assets/img/ImageHandler.png" alt="Food Image"/>
+                            <img 
+                            v-show="isDefaultImage" 
+                            src="@/assets/img/ImageHandler.png" 
+                            alt="Food Image" 
+                            ref="avatarDefault" 
+                            @click="onClickImage()"/>
+                            <img 
+                            v-show="!isDefaultImage" 
+                            src="" 
+                            alt="Food Image" ref="avatarResource" 
+                            @click="onClickImage()"/>
                         </div>
                         <p>Chọn các ảnh có định dạng</p>
                         <p>(.jpj, .jpeg, .png, .gif)</p>
                         <p>Chọn từ thư viện ảnh</p>
                     </div>
                     <div class="buttons-container">
-                        <d-button btnText = '....'></d-button>
+                        <d-button btnText = '....' @click="onClickImage()"></d-button>
                         <d-button>
                             <template #icon>
-                                <div class="delete-icon"></div>
+                                <div class="delete-icon" @click="onClickDeleteImage()"></div>
                             </template>
                         </d-button>
                     </div>
@@ -202,40 +219,46 @@
                                 <td style="width: 65%" @click="showTableInput(0, index, 'FoodHobbyName')">{{item.FoodHobbyName}}
                                     <div class="input-section" v-click-outside="(e) => hideTableInput(e, 0, index)">
                                         <input
+                                        :class="{'tr-selected' : currentHobbyRowSelected == index}"
                                         :name="`FoodHobbyName0${index}`"
                                         v-model="foodInfo.FoodHobbyList[index].FoodHobbyName"
                                         :ref="`FoodHobbyName`"
                                         autocomplete="off"
                                         @focusout="onFocusOutFoodHobbyInput(index)"
+                                        @input="(e) => onInputFoodHobby(e, index)"
                                         />
-                                        <div class="dropdown-icon" @click="(e) => toggleComboboxHobby(e, index)" v-show="isFoodHobbyInput[0][index]"></div>
-                                        <div class="search-icon" v-show="isFoodHobbyInput[0][index]"></div>
+                                        <div class="icon-container" v-show="isFoodHobbyInput[0][index]" @click="(e) => toggleComboboxHobby(e, index)">
+                                            <div class="dropdown-icon"></div>
+                                        </div>
                                         <div class="add-icon" v-show="isFoodHobbyInput[0][index]" @click="setIsFormFoodHobby(index, true)"></div>
-                                        <base-table-combobox
-                                        v-if="isComboboxHobby[index]"
-                                        :options="foodHobbyList"
-                                        :inputValue="foodInfo.FoodHobbyList[index]"
-                                        :indexSelected="index"
-                                        :isShow="isComboboxHobby[index]"
-                                        :rectCalculate="rectCalculate"
-                                        v-click-outside="(e) => onCLickOutsideCombobox(e, index)"
-                                        @toggleCombobox="toggleComboboxHobby"
-                                        @setInputValue="setValueFoodHobbyInput"
-                                        />
                                     </div>
                                 </td>
                                 <td style="width: 35%" @click="showTableInput(1, index, 'FoodHobbyFee')">{{item.FoodHobbyFee}}
                                     <div class="input-section">
                                         <input
+                                        :class="{'tr-selected' : currentHobbyRowSelected == index}"
                                         :name="`FoodHobbyName1${index}`"
                                         v-model="foodInfo.FoodHobbyList[index].FoodHobbyFee"
                                         @input="validateMoneyInput(index)"
                                         :ref="`FoodHobbyFee`"
-                                        autocomplete="off"/>
+                                        autocomplete="off"
+                                        />
                                     </div>
                                 </td>
                             </tr>
                         </tbody>
+                        <base-table-combobox
+                        v-show="isComboboxHobby"
+                        :options="foodHobbyList"
+                        :inputValue="foodInfo.FoodHobbyList[indexFoodHobbySelected]"
+                        :indexSelected="indexFoodHobbySelected"
+                        :isShow="isComboboxHobby"
+                        :rectCalculate="rectCalculate"
+                        v-click-outside="(e) => onCLickOutsideCombobox(e)"
+                        @toggleCombobox="toggleComboboxHobby"
+                        @setInputValue="setValueFoodHobbyInput"
+                        @changeForm="changeForm"
+                        />
                     </table>
                 </div>
                 <div class="buttons-container">
@@ -296,14 +319,14 @@
     @showErrorModal="showErrorModal"
     @showSuccessModal="showSuccessModal"
     />
-    <modal-alert
+    <!-- <modal-alert
         v-if="isAlertOpened"
         :duplicateId="duplicateId"
         :modalType="'warning'">
             <template #button-section>
                 <d-button btnText="Đồng ý" @click="closeAlert()"></d-button>
             </template>
-    </modal-alert>
+    </modal-alert> -->
     <modal-alert
     v-if="isModalChange"
     :modalType="'confirm-change'">
@@ -318,12 +341,14 @@
         </template>
     </modal-alert>
     <modal-alert
-    v-if="isModalHobbyDuplicate"
-    :modalType="'duplicateFoodHobby'">
+    v-if="isModalInvalid"
+    :modalType="'invalid'"
+    :warningErrorMsg="warningErrorMsg">
         <template #button-section>
-            <d-button btnText="Đồng ý" @click="closeDuplicateHobby()"></d-button>
+            <d-button btnText="Đồng ý" @click="closeInvalidModal()"></d-button>
         </template>
     </modal-alert>
+    <input type="file" ref="import" @change="(e) => onChangeImage(e)" hidden/>
 </div>
 </template>
 
@@ -333,6 +358,7 @@ import DButton from '../element/DButton.vue'
 import TheCheckbox from "../element/TheCheckbox.vue";
 import ModalAlert from "./ModalAlert.vue";
 import ErrMsgs from "../../js/Resources/ErrMsgs";
+import API_HEADER from "../../js/Resources/Api";
 import BaseForm from "../element/BaseForm.vue";
 import GroupDetailForm from "./GroupDetailForm.vue";
 import PlaceDetailForm from "./PlaceDetailForm.vue";
@@ -360,7 +386,7 @@ export default {
     //khi edit, lưu food đang update để check trùng
     //CreatedBy: NMDUC
     //CreatedDate: 21/8/2022
-    created(){
+    async created(){
         this.isFormChange = false
         this.getAPIFoodCode()
         this.getAPIFoodGroup()
@@ -368,33 +394,131 @@ export default {
         this.getAPIFoodUnit()
         this.getAPIFoodHobby()
         if(this.editMode === false){
-            this.foodInfo = {FoodHobbyList: [{FoodHobbyName: '',FoodHobbyFee: 0}]}
-            this.focusInput("FoodName")
+            this.foodInfo = {FoodHobbyList: [{FoodHobbyName: '',FoodHobbyFee: '0'}]}
         }
         else if(this.editMode === true){
-            axios.get(`http://localhost:5011/api/v1/Foods/${this.foodUpdateId}`).then(res => {
-                this.foodInfo = res.data
-                this.foodUpdateCode = this.foodInfo.FoodCode
-                //Hiển thị giá bán với dấu chấm ở giữa
-                this.foodInfo.FoodSellPrice = this.validateMoney(this.foodInfo.FoodSellPrice)
-                this.foodInfo.FoodMakePrice = this.validateMoney(this.foodInfo.FoodMakePrice)
-                this.focusInput("FoodName")
+            var res1 = await axios.get(`${API_HEADER.Api_header}Foods/${this.foodUpdateId}`)
+            this.foodInfo = res1.data
+            this.foodUpdateCode = this.foodInfo.FoodCode
+            //Hiển thị giá bán với dấu chấm ở giữa
+            this.foodInfo.FoodSellPrice = this.validateMoney(this.foodInfo.FoodSellPrice)
+            this.foodInfo.FoodMakePrice = this.validateMoney(this.foodInfo.FoodMakePrice)
+            this.foodInfo.FoodHobbyList.forEach((hobby) => {
+                hobby.FoodHobbyFee = this.validateMoney(hobby.FoodHobbyFee)
+                console.log(hobby);
             })
+            if(this.foodInfo.LinkImage){
+                this.isDefaultImage = false
+                this.$refs.avatarResource.src = 'http://localhost:5011' + this.foodInfo.LinkImage
+            }
+            else{
+                this.isDefaultImage = true
+            }
         }
         else{
-            axios.get(`http://localhost:5011/api/v1/Foods/${this.foodUpdateId}`).then(res => {
-                this.foodInfo = res.data
-                this.generateNewCode(this.foodInfo.FoodName)
-                //Hiển thị giá bán với dấu chấm ở giữa
-                this.foodInfo.FoodSellPrice = this.validateMoney(this.foodInfo.FoodSellPrice)
-                this.foodInfo.FoodMakePrice = this.validateMoney(this.foodInfo.FoodMakePrice)
-                this.focusInput("FoodName")
+            var res = await axios.get(`${API_HEADER.Api_header}Foods/${this.foodUpdateId}`)
+            this.foodInfo = res.data
+            this.generateNewCode(this.foodInfo.FoodName)
+            //Hiển thị giá bán với dấu chấm ở giữa
+            this.foodInfo.FoodSellPrice = this.validateMoney(this.foodInfo.FoodSellPrice)
+            this.foodInfo.FoodMakePrice = this.validateMoney(this.foodInfo.FoodMakePrice)
+            this.foodInfo.FoodHobbyList.forEach((hobby) => {
+                hobby.FoodHobbyFee = this.validateMoney(hobby.FoodHobbyFee)
             })
+            if(this.foodInfo.LinkImage){
+                this.isDefaultImage = false
+                this.$refs.avatarResource.src = 'http://localhost:5011' + this.foodInfo.LinkImage
+            }
+            else{
+                this.isDefaultImage = true
+            }
         }
-        
+    },
+
+    mounted(){
+        if(this.editMode === false){
+            this.foodInfo.FoodSellPrice = '0'
+            this.foodInfo.FoodMakePrice = '0'
+        }
+        this.focusInput('FoodName')
     },
 
     methods: {
+        //Khi chọn link ảnh
+        //CreatedBy: NMDUC
+        //CreatedDate: 21/8/2022
+        onChangeImage(e){
+            var file = e.target.files[0]
+            if (!file) {
+                this.warningErrorMsg = ErrMsgs.errMsg_Image_Null
+                this.setIsModalInvalid(true);
+                this.errorTab = "FoodInfoTab"
+                return
+            }
+            else if (!file.name.toLowerCase().endsWith('.jpg') && !file.name.toLowerCase().endsWith('.png') && !file.name.toLowerCase().endsWith('.jpeg')) {
+                this.warningErrorMsg = ErrMsgs.errMsg_Image_Invalid
+                this.setIsModalInvalid(true);
+                this.errorTab = "FoodInfoTab"
+                return
+            } else if((file.Length > 5 * 1024 * 1024)) {
+                this.warningErrorMsg = ErrMsgs.errMsg_Image_Overload
+                this.setIsModalInvalid(true);
+                this.errorTab = "FoodInfoTab"
+                return
+            }
+            let avatar = this.$refs.avatarResource
+            URL.revokeObjectURL(avatar.src)
+            avatar.src = URL.createObjectURL(file)
+            this.imageFile = file
+            this.isDefaultImage = false
+        },
+
+        //Khi bấm vào ảnh hoặc nút thêm ảnh
+        //CreatedBy: NMDUC
+        //CreatedDate: 21/8/2022
+        onClickImage(){
+            this.$refs.import.click()
+        },
+
+        //Khi bấm vào nút xóa ảnh
+        //CreatedBy: NMDUC
+        //CreatedDate: 21/8/2022
+        onClickDeleteImage(){
+            this.isDefaultImage = true
+            URL.revokeObjectURL(this.$refs.avatarResource.src)
+            this.imageFile = null
+        },
+
+        //Khi bấm cất, thực hiện upload image
+        //CreatedBy: NMDUC
+        //CreatedDate: 21/8/2022
+        async handleUploadImage(){
+            let formData = new FormData();
+            formData.append("image", this.imageFile)
+            try{
+                const res = await axios.post(
+                `${API_HEADER.Api_header}Foods/importFile`,
+                formData,
+                {
+                    headers: {
+                        "Content-Type": "multipart/form-data"
+                    }
+                }
+            )
+            if(res.status === 200){
+                this.$emit('showSuccessModal')
+                this.foodInfo.LinkImage = res.data
+            }
+            else{
+                this.$emit('showErrorModal')
+            }
+            }
+            catch(err){
+                console.log(err);
+            }
+            
+        },
+
         //Lấy danh sách code món ăn
         //CreatedBy: NMDUC
         //CreatedDate: 21/8/2022
@@ -405,7 +529,7 @@ export default {
             //Lưu 1 mảng các id để check trùng
             //Danh sách code món ăn
             try{
-                axios.get('http://localhost:5011/api/v1/Foods').then(res => {
+                axios.get(`${API_HEADER.Api_header}Foods`).then(res => {
                     for(let i = 0; i<res.data.length; i++){
                         if(res.data[i].FoodId){
                             me.foodCodeList.push(res.data[i].FoodCode)
@@ -428,7 +552,7 @@ export default {
             //Lưu 1 mảng các id để check trùng
             //Danh sách nhóm thức ăn
             try{
-                axios.get('http://localhost:5011/api/v1/FoodGroups').then(res => {
+                axios.get(`${API_HEADER.Api_header}FoodGroups`).then(res => {
                     for(let i = 0; i<res.data.length; i++){
                         if(res.data[i].FoodGroupName){
                             me.foodGroupNameList.push(res.data[i].FoodGroupName)
@@ -452,7 +576,7 @@ export default {
             //Lưu 1 mảng các id để check trùng
             //Danh sách đơn vị tính
             try{
-                axios.get('http://localhost:5011/api/v1/FoodUnits').then(res => {
+                axios.get(`${API_HEADER.Api_header}FoodUnits`).then(res => {
                     for(let i = 0; i<res.data.length; i++){
                         if(res.data[i].FoodUnitName){
                             me.foodUnitNameList.push(res.data[i].FoodUnitName)
@@ -476,7 +600,7 @@ export default {
             //Lưu 1 mảng các id để check trùng
             //Danh sách nơi chế biến
             try{
-                axios.get('http://localhost:5011/api/v1/FoodPlaces').then(res => {
+                axios.get(`${API_HEADER.Api_header}FoodPlaces`).then(res => {
                     for(let i = 0; i<res.data.length; i++){
                         if(res.data[i].FoodPlaceName){
                             me.foodPlaceNameList.push(res.data[i].FoodPlaceName)
@@ -500,10 +624,15 @@ export default {
             //Lưu 1 mảng các id để check trùng
             //Danh sách sở thích phục vụ
             try{
-                axios.get('http://localhost:5011/api/v1/FoodHobbys').then(res => {
+                axios.get(`${API_HEADER.Api_header}FoodHobbys`).then(res => {
                     for(let i = 0; i<res.data.length; i++){
                         if(res.data[i].FoodHobbyName){
-                            me.foodHobbyList.push({FoodHobbyName: res.data[i].FoodHobbyName, FoodHobbyFee: res.data[i].FoodHobbyFee})
+                            if(res.data[i].FoodHobbyFee){
+                                me.foodHobbyList.push({FoodHobbyName: res.data[i].FoodHobbyName, FoodHobbyFee: this.validateMoney(res.data[i].FoodHobbyFee)})
+                            }
+                            else{
+                                me.foodHobbyList.push({FoodHobbyName: res.data[i].FoodHobbyName, FoodHobbyFee: '0'})
+                            }
                         }
                     }
                 })
@@ -523,31 +652,15 @@ export default {
         //Khi bấm cất
         //CreatedBy: NMDUC
         //CreatedDate: 17/8/2022
-        onSubmitClick(e){
-            var hobbyList = this.foodInfo.FoodHobbyList
+        async onSubmitClick(e){
             e.preventDefault();
+            if(this.imageFile){
+                await this.handleUploadImage()
+            }
             //Kiểm tra lỗi
-            this.validateForm()
             //Nếu có error
-            if (Object.keys(this.errorMsg).length > 0) {
-                this.focusInput(Object.keys(this.errorMsg)[0])
-                this.currentTab = "FoodInfoTab"
+            if(this.validateForm() === false){
                 return
-            }
-            //Nếu trùng mã
-            if (this.checkDuplicate() === false) {
-                this.currentTab = "FoodInfoTab"
-                return
-            }
-            //Nếu sở thích phục vụ trùng nhau
-            for(let i = 0; i< hobbyList.length; i++){
-                for(let j = i + 1; j< hobbyList.length; j++){
-                    if(hobbyList[i].FoodHobbyName === hobbyList[j].FoodHobbyName &&
-                    hobbyList[i].FoodHobbyFee === hobbyList[j].FoodHobbyFee){
-                        this.setIsModalHobbyDuplicate(true);
-                        return
-                    }
-                }
             }
             this.updateData();
             this.$emit('setFormState', false)
@@ -556,34 +669,59 @@ export default {
         //Khi bấm cất và thêm
         //CreatedBy: NMDUC
         //CreatedDate: 17/8/2022
-        onSubmitAndAddClick(e){
+        async onSubmitAndAddClick(e){
             e.preventDefault();
-            var hobbyList = this.foodInfo.FoodHobbyList
+            if(this.imageFile){
+                await this.handleUploadImage()
+            }
             //Kiểm tra lỗi
-            this.validateForm()
             //Nếu có error
-            if (Object.keys(this.errorMsg).length > 0) {
-                this.currentTab = "FoodInfoTab"
-                this.focusInput(Object.keys(this.errorMsg)[0])
+            if(this.validateForm() === false){
                 return
-            }
-            if (this.checkDuplicate() === false) {
-                this.currentTab = "FoodInfoTab"
-                return
-            }
-            //Nếu sở thích phục vụ trùng nhau
-            for(let i = 0; i< hobbyList.length; i++){
-                for(let j = i+1; j< hobbyList.length; j++){
-                    if(hobbyList[i].FoodHobbyName === hobbyList[j].FoodHobbyName &&
-                    hobbyList[i].FoodHobbyFee === hobbyList[j].FoodHobbyFee){
-                        this.setIsModalHobbyDuplicate(true);
-                        return
-                    }
-                }
             }
             this.updateData();
-            this.foodInfo = {FoodHobbyList: []}
+            //reset lại form
+            this.isFormChange = false
+            this.getAPIFoodCode()
+            this.getAPIFoodGroup()
+            this.getAPIFoodPlace()
+            this.getAPIFoodUnit()
+            this.getAPIFoodHobby()
+            this.foodInfo = {FoodHobbyList: [{FoodHobbyName: '',FoodHobbyFee: '0'}]}
             this.$emit('setEditMode', false)
+            this.foodInfo.FoodSellPrice = '0'
+            this.foodInfo.FoodMakePrice = '0'
+            this.currentTab = "FoodInfoTab"
+        },
+
+        //Hamf validateForm tổng hợp
+        //CreatedBy: NMDUC
+        //CreatedDate: 17/8/2022
+        validateForm(){
+            if(this.checkNull() === false){
+                this.setIsModalInvalid(true);
+                this.errorTab = "FoodInfoTab"
+                return false
+            }
+            //Nếu trùng mã
+            if (this.checkDuplicate() === false) {
+                this.setIsModalInvalid(true);
+                this.errorTab = "FoodInfoTab"
+                return false
+            }
+            //Nếu các dữ liệu không có trong danh mục
+            if (this.checkInvalid() === false) {
+                this.setIsModalInvalid(true);
+                this.errorTab = "FoodInfoTab"
+                return false
+            }
+            //Nếu sở thích phục vụ trùng nhau
+            if(this.validateHobbyList() === false){
+                this.setIsModalInvalid(true);
+                this.errorTab = "FoodHobbyTab"
+                return false
+            }
+            return true
         },
 
         //lấy dữ liệu từ form để validate
@@ -591,60 +729,54 @@ export default {
         //Các errmsg sẽ hiện dưới dạng title
         //CreatedBy: NMDUC
         //CreatedDate: 17/8/2022
-        validateForm(){
-            const error = {};
+        checkNull(){
+            this.errorMsg = {}
+            this.isError = {}
             const values = this.foodInfo
             if (!values.FoodName || !values.FoodName.trim()){
-                error.FoodName = ErrMsgs.errMsg_FoodName_Null;
+                this.errorMsg.FoodName = ErrMsgs.errMsg_FoodName_Null;
                 this.isError.FoodName = true;
+                this.warningErrorMsg = ErrMsgs.errMsg_FoodName_Null
+                this.propFocus = 'FoodName'
+                return false
             }
             else{
                 this.isError.FoodName = false;
             }
 
             if (!values.FoodCode || !values.FoodCode.trim()){
-                error.FoodCode = ErrMsgs.errMsg_FoodCode_Null;
+                this.errorMsg.FoodCode = ErrMsgs.errMsg_FoodCode_Null;
                 this.isError.FoodCode = true;
+                this.warningErrorMsg = ErrMsgs.errMsg_FoodCode_Null
+                this.propFocus = 'FoodCode'
+                return false
             }
             else{
                 this.isError.FoodCode = false;
             }
 
-            if(values.FoodGroupName && !this.foodGroupNameList.includes(values.FoodGroupName)){
-                error.FoodGroupName = ErrMsgs.errMsg_FoodGroupName_Invalid
-                this.isError.FoodGroupName = true;
-            }
-            else{
-                this.isError.FoodGroupName = false;
-            }
-            if(values.FoodPlaceName && !this.foodPlaceNameList.includes(values.FoodPlaceName)){
-                error.FoodPlaceName = ErrMsgs.errMsg_FoodPlaceName_Invalid
-                this.isError.FoodPlaceName = true;
-            }
-            else{
-                this.isError.FoodPlaceName = false;
-            }
-
             if (!values.FoodUnitName){
-                error.FoodUnitName = ErrMsgs.errMsg_FoodUnitName_Null;
+                this.errorMsg.FoodUnitName = ErrMsgs.errMsg_FoodUnitName_Null;
                 this.isError.FoodUnitName = true;
-            }
-            else if(!this.foodUnitNameList.includes(values.FoodUnitName)){
-                error.FoodUnitName = ErrMsgs.errMsg_FoodUnitName_Invalid
-                this.isError.FoodUnitName = true;
+                this.warningErrorMsg = ErrMsgs.errMsg_FoodUnitName_Null
+                this.propFocus = 'FoodUnitName'
+                return false
             }
             else{
                 this.isError.FoodUnitName = false;
             }
 
             if (!values.FoodSellPrice && values.FoodSellPrice !== 0){
-                error.FoodSellPrice = ErrMsgs.errMsg_FoodSellPrice_Null;
+                this.errorMsg.FoodSellPrice = ErrMsgs.errMsg_FoodSellPrice_Null;
                 this.isError.FoodSellPrice = true;
+                this.warningErrorMsg = ErrMsgs.errMsg_FoodSellPrice_Null
+                this.propFocus = 'FoodSellPrice'
+                return false
             }
             else{
                 this.isError.FoodSellPrice = false;
             }
-            this.errorMsg = error;
+            return true
         },
 
         //Check trùng dữ liệu
@@ -656,8 +788,7 @@ export default {
             //nếu trùng hiện cảnh báo(alert), đồng thời set cho biến duplicateId để hiển thị lên cảnh báo
             //biến propFocus cũng được set thành FoodCode để truyền vào modal, sau khi đóng sẽ focus vào đó
             if(this.foodCodeList.includes(this.foodInfo.FoodCode) && this.foodInfo.FoodCode !== this.foodUpdateCode){
-                this.setIsModalAlert(true);
-                this.duplicateId = this.foodInfo.FoodCode;
+                this.warningErrorMsg = ErrMsgs.errMsg_FoodCode_Duplicate(this.foodInfo.FoodCode)
                 this.propFocus = "FoodCode"
                 return false;
             }
@@ -669,13 +800,87 @@ export default {
             //nếu trùng hiện cảnh báo(alert), đồng thời set cho biến duplicateId để hiển thị lên cảnh báo
             //biến propFocus cũng được set thành FoodCode để truyền vào modal, sau khi đóng sẽ focus vào đó
             if (this.foodCodeList.includes(this.foodInfo.FoodCode)) {
-                this.setIsModalAlert(true);
-                this.duplicateId = this.foodInfo.FoodCode;
+                this.warningErrorMsg = ErrMsgs.errMsg_FoodCode_Duplicate(this.foodInfo.FoodCode)
                 this.propFocus = "FoodCode"
                 return false;
             }
             return true;
         }
+        },
+
+        checkInvalid(){
+            const values = this.foodInfo
+            if(values.FoodGroupName && !this.foodGroupNameList.includes(values.FoodGroupName)){
+                this.warningErrorMsg = ErrMsgs.errMsg_FoodGroupName_Invalid
+                this.errorMsg.FoodGroupName = ErrMsgs.errMsg_FoodGroupName_Invalid
+                this.isError.FoodGroupName = true;
+                this.propFocus = 'FoodGroupName'
+                return false
+            }
+            else{
+                this.isError.FoodGroupName = false;
+            }
+
+            if(!this.foodUnitNameList.includes(values.FoodUnitName)){
+                this.warningErrorMsg = ErrMsgs.errMsg_FoodUnitName_Invalid
+                this.errorMsg.FoodUnitName = ErrMsgs.errMsg_FoodUnitName_Invalid
+                this.isError.FoodUnitName = true;
+                this.propFocus = 'FoodUnitName'
+                return false
+            }
+            else{
+                this.isError.FoodUnitName = false;
+            }
+
+            if(values.FoodPlaceName && !this.foodPlaceNameList.includes(values.FoodPlaceName)){
+                this.warningErrorMsg = ErrMsgs.errMsg_FoodPlaceName_Invalid
+                this.errorMsg.FoodPlaceName = ErrMsgs.errMsg_FoodPlaceName_Invalid
+                this.isError.FoodPlaceName = true;
+                this.propFocus = 'FoodPlaceName'
+                return false
+            }
+            else{
+                this.isError.FoodPlaceName = false;
+            }
+            return true
+        },
+
+        //Vaidate cho danh sách sở thích phục vụ
+        // Ngày sửa: 18/8/2022
+        // Người sửa: NMDUC
+        validateHobbyList(){
+            //validate trường danh sách sở thích (cần thiết)
+            this.foodInfo.FoodHobbyList.forEach((hobby) => {
+                hobby.FoodHobbyName = hobby.FoodHobbyName.trim()
+                if((!hobby.FoodHobbyName || hobby.FoodHobbyName === "") && (!hobby.FoodHobbyFee || hobby.FoodHobbyFee === "0")){
+                    var indexDelete = this.foodInfo.FoodHobbyList.indexOf(hobby)
+                    this.foodInfo.FoodHobbyList = this.foodInfo.FoodHobbyList.filter((item, index) => indexDelete !== index)
+                }
+                else{
+                    if(!hobby.FoodHobbyFee || hobby.FoodHobbyFee === ""){
+                        hobby.FoodHobbyFee = 0
+                    }
+                }
+            });
+            var hobbyList = this.foodInfo.FoodHobbyList
+            for(let i = 0; i< hobbyList.length; i++){
+                for(let j = i+1; j< hobbyList.length; j++){
+                    //Nếu sở thích phục vụ trùng nhau
+                    if(hobbyList[i].FoodHobbyName === hobbyList[j].FoodHobbyName &&
+                    hobbyList[i].FoodHobbyFee === hobbyList[j].FoodHobbyFee){
+                        this.currentHobbyRowSelected = j
+                        this.warningErrorMsg = ErrMsgs.errMsg_FoodHobbyList_Duplicate
+                        return false
+                    }
+                }
+                //Nêú sở thích phục vụ có 1 phần tử không tên nhưng có thu thêm
+                if(!hobbyList[i].FoodHobbyName || hobbyList[i].FoodHobbyName === "" && (hobbyList[i].FoodHobbyFee && hobbyList[i].FoodHobbyFee !== 0)){
+                    this.currentHobbyRowSelected = i
+                    this.warningErrorMsg = ErrMsgs.errMsg_FoodHobbyList_Invalid
+                    return false
+                }
+            }
+            return true
         },
 
         //Khi đã đúng hết định dạng và có thể gửi về backend, thực hiện update
@@ -693,9 +898,23 @@ export default {
             if(this.foodInfo.FoodPlaceName){
                 this.foodInfo.FoodPlaceId = this.ConvertFoodPlace[this.foodInfo.FoodPlaceName]
             }
-            //validate trường danh sách sở thích
+            //validate giá bán trước khi gửi (bỏ dấu chấm ở giữa)
+            if(this.foodInfo.FoodSellPrice){
+                this.foodInfo.FoodSellPrice = this.foodInfo.FoodSellPrice.toString().replaceAll('.', '')
+                this.foodInfo.FoodSellPrice = Number.parseFloat(this.foodInfo.FoodSellPrice)
+            }
+            if(this.foodInfo.FoodMakePrice){
+                this.foodInfo.FoodMakePrice = this.foodInfo.FoodMakePrice.toString().replaceAll('.', '')
+                this.foodInfo.FoodMakePrice = Number.parseFloat(this.foodInfo.FoodMakePrice)
+            }
+            //validate trường danh sách sở thích (cho chắc)
             this.foodInfo.FoodHobbyList.forEach((hobby) => {
+                
                 hobby.FoodHobbyName = hobby.FoodHobbyName.trim()
+                if(hobby.FoodHobbyFee){
+                    hobby.FoodHobbyFee = hobby.FoodHobbyFee.toString().replaceAll('.', '')
+                    hobby.FoodHobbyFee = Number.parseFloat(hobby.FoodHobbyFee)
+                }
                 if(!hobby.FoodHobbyName || hobby.FoodHobbyName === ""){
                     var indexDelete = this.foodInfo.FoodHobbyList.indexOf(hobby)
                     this.foodInfo.FoodHobbyList = this.foodInfo.FoodHobbyList.filter((item, index) => indexDelete !== index)
@@ -706,11 +925,9 @@ export default {
                     }
                 }
             });
-            //validate giá bán trước khi gửi (bỏ dấu chấm ở giữa)
-            this.foodInfo.FoodSellPrice = this.foodInfo.FoodSellPrice.toString().replaceAll('.', '')
-            this.foodInfo.FoodSellPrice = Number.parseFloat(this.foodInfo.FoodSellPrice)
-            this.foodInfo.FoodMakePrice = this.foodInfo.FoodMakePrice.toString().replaceAll('.', '')
-            this.foodInfo.FoodMakePrice = Number.parseFloat(this.foodInfo.FoodMakePrice)
+            if(this.isDefaultImage === true){
+                this.foodInfo.LinkImage = ""
+            }
             //emit hàm của component cha để gọi API
             if (this.editMode === true) {
                 this.foodInfo.FoodType = "Món ăn"
@@ -733,7 +950,13 @@ export default {
         //CreatedDate: 17/8/2022
         setInputValue(propName, value){
             this.foodInfo[propName] = value
-            this.isError[propName] = false
+        },
+
+        //Đặt giá trị cho error của 1 inut
+        //CreatedBy: NMDUC
+        //CreatedDate: 26/8/2022
+        setErrorInput(propName, state){
+            this.isError[propName] = state
             this.errorMsg[propName] = ""
         },
 
@@ -744,7 +967,7 @@ export default {
             this.currentHobbyRowSelected = index
             this.isFoodHobbyInput[colNum][index] = true;
             this.$nextTick(function(){
-                this.$refs[propName][index].focus()
+                this.$refs[propName][index].select()
             })
         },
 
@@ -758,9 +981,13 @@ export default {
         //set value cho attr FoodHobbyList, hàm này gửi vào combobox-table để set khi chọn option
         //CreatedBy: NMDUC
         //CreatedDate: 17/8/2022
-        setValueFoodHobbyInput(index, value){
+        setValueFoodHobbyInput(propName, index, value){
+            this.isFormChange = true
             this.foodInfo.FoodHobbyList[index].FoodHobbyName = value.FoodHobbyName
             this.foodInfo.FoodHobbyList[index].FoodHobbyFee = value.FoodHobbyFee
+            this.$nextTick(function(){
+                this.$refs[propName][index].focus()
+            })
         },
 
         //Thêm dòng cho tab sở thích phục vụ
@@ -782,34 +1009,33 @@ export default {
         //CreatedBy: NMDUC
         //CreatedDate: 17/8/2022
         validateMandaInput(propName, state, errorType){
-            this.isError[propName] = state
-            if(state === true){
-                var errName = `errMsg_${propName}_${errorType}`
-                this.errorMsg[propName] = ErrMsgs[errName]
+            var str = `errMsg_${propName}_Null`
+            if(this.isError[propName] === true && this.errorMsg[propName] !== ErrMsgs[str]){
+                return
             }
             else{
-                this.errorMsg[propName] = ""
+                this.isError[propName] = state
+                if(state === true){
+                    var errName = `errMsg_${propName}_${errorType}`
+                    this.errorMsg[propName] = ErrMsgs[errName]
+                }
+                else{
+                    this.errorMsg[propName] = ""
+                }
             }
         },
 
         //sinh mã mới
         //CreatedBy: NMDUC
         //CreatedDate: 17/8/2022
-        generateNewCode(foodName){
+        async generateNewCode(foodName){
             if(this.editMode === true){
                 return
             }
-            foodName = this.validateCodeString(foodName)
-            var newCode = ''
-            if(!this.foodCodeList.includes(this.getFirstLetter(foodName))){
-                newCode = this.getFirstLetter(foodName) 
-            }
-            else if(!this.foodCodeList.includes(this.getTwoFirstLetter(foodName))){
-                newCode = this.getTwoFirstLetter(foodName)
-            }
-            else{
-                newCode = this.getAllLetter(foodName)
-            }
+            var newCode = this.validateCodeString(foodName)
+            var foodList = [this.getFirstLetter(newCode), this.getTwoFirstLetter(newCode), this.getAllLetter(newCode)]
+            var res = await axios.post(`${API_HEADER.Api_header}Foods/newCode`, foodList)
+            newCode = res.data
             this.foodInfo.FoodCode = newCode
             this.isError.FoodCode = false
         },
@@ -849,8 +1075,8 @@ export default {
         //Mở modal cảnh báo sở thích trùng
         //CreatedBy: NMDUC
         //CreatedDate: 17/8/2022
-        setIsModalHobbyDuplicate(state){
-            this.isModalHobbyDuplicate = state
+        setIsModalInvalid(state){
+            this.isModalInvalid = state
         },
 
         //hàm hứng hàm setIsLoading
@@ -919,7 +1145,17 @@ export default {
             this.checkFocus[propName] = !this.checkFocus[propName]
         },
 
-        //Mở combobox của input tương ứng tại bảng sở thích
+        //Focus vào 1 input của bảng
+        //param: ref của input muốn focus
+        //CreatedBy: NMDUC
+        //CreatedDate: 17/8/2022
+        focusTableInput(propName, index){
+            this.$nextTick(function(){
+                this.$refs[propName][index].focus()
+            })
+        },
+
+        //toggle combobox của input tương ứng tại bảng sở thích
         //đầu vào: e: sự kiện bấm và index của input được bấm
         //tính toán vị trí của dropdown-icon được bấm và truyền vào combobox-table
         //CreatedBy: NMDUC
@@ -927,36 +1163,53 @@ export default {
         toggleComboboxHobby(e, index){
             this.rectCalculate = e.target.parentNode.getBoundingClientRect()
             this.rectCalculate.y = this.rectCalculate.y + 23
-            this.isClickDropdownIcon[index] = true
-            this.isComboboxHobby[index] =  !this.isComboboxHobby[index]
+            this.indexFoodHobbySelected = index
+            this.isClickDropdownIcon = true
+            this.isComboboxHobby =  !this.isComboboxHobby
         },
 
-        //Đóng modal cảnh báo (alert) và focus vào ô FoodCode
-        // Ngày sửa: 13/7/2022
-        // Người sửa: NMDUC
-        closeAlert(){
-            this.setIsModalAlert(false)
-            this.focusInput(this.propFocus)
-            this.currentTab = 'FoodInfoTab'
+        onInputFoodHobby(e, index){
+            this.changeForm()
+            this.openComboboxHobby(e, index)
+        },
+        
+        //Mở combobox của input tương ứng tại bảng sở thích
+        //đầu vào: e: sự kiện bấm và index của input được bấm
+        //tính toán vị trí của dropdown-icon được bấm và truyền vào combobox-table
+        //CreatedBy: NMDUC
+        //CreatedDate: 17/8/2022
+        openComboboxHobby(e, index){
+            this.rectCalculate = e.target.parentNode.getBoundingClientRect()
+            this.rectCalculate.y = this.rectCalculate.y + 23
+            this.indexFoodHobbySelected = index
+            this.isClickDropdownIcon = true
+            this.isComboboxHobby = true
         },
 
         //Đóng modal trùng (duplicate)
         // Ngày sửa: 13/7/2022
         // Người sửa: NMDUC
-        closeDuplicateHobby(){
-            this.setIsModalHobbyDuplicate(false)
-            this.currentTab = 'FoodHobbyTab'
+        closeInvalidModal(){
+            this.setIsModalInvalid(false)
+            this.currentTab = this.errorTab
+            if(this.errorTab === 'FoodInfoTab'){
+                this.focusInput(this.propFocus)
+            }
+            else{
+                this.focusTableInput('FoodHobbyName', this.currentHobbyRowSelected)
+            }
         },
 
         //Khi bấm ra ngoài combobox, ẩn combobox
         // Ngày sửa: 13/7/2022
         // Người sửa: NMDUC
-        onCLickOutsideCombobox(e, index){
-            if (this.isClickDropdownIcon[index] === false) {
-                this.isComboboxHobby[index] = false
+        onCLickOutsideCombobox(e){
+            console.log(e);
+            if (this.isClickDropdownIcon === false) {
+                this.isComboboxHobby = false
             }
             else{
-                this.isClickDropdownIcon[index] = false
+                this.isClickDropdownIcon = false
             }
         },
 
@@ -1028,14 +1281,15 @@ export default {
         // Người sửa: NMDUC
         validateMoneyInput(index){
             this.foodInfo.FoodHobbyList[index].FoodHobbyFee = this.validateMoney(this.foodInfo.FoodHobbyList[index].FoodHobbyFee)
+            this.changeForm()
         },
         
         //hàm validate tiền
         // Ngày sửa: 13/7/2022
         // Người sửa: NMDUC
         validateMoney(money){
-            if(!money){
-                return
+            if(!money && money != 0){
+                return money
             }
             if (typeof money === 'number') {
                 money = Math.round(money);
@@ -1055,11 +1309,9 @@ export default {
             foodInfo: {FoodHobbyList: []},
             isFoodHobbyInput: [[], []],
             currentHobbyRowSelected: 0,
-            isAlertOpened: false,
             isModalChange: false,
-            isModalHobbyDuplicate: false,
+            isModalInvalid: false,
             checkFocus: {},
-            duplicateId: "",
             //Các danh sách lưu để check trùng
             //
             foodCodeList: [],
@@ -1076,9 +1328,10 @@ export default {
             ConvertFoodHobby: {},
             //
             foodUpdateCode: "",
+            //khi đóng cảnh báo thì focus vào
             propFocus: "",
             //mỗi input của table có 1 combobox, mỗi combobox có 1 biến này để ẩn hiện
-            isComboboxHobby: [],
+            isComboboxHobby: false,
             //biến ẩn hiện của từng form nhỏ
             isFormFoodGroupName: false,
             isFormFoodPlaceName: false,
@@ -1086,10 +1339,17 @@ export default {
             isFormFoodHobby: false,
             //
             indexFoodHobbySelected: '',
-            isClickDropdownIcon: [],
+            isClickDropdownIcon: false,
             rectCalculate: {},
             //check form thay đổi
-            isFormChange: false
+            isFormChange: false,
+            //
+            warningErrorMsg: [],
+            //tab đang lỗi để khi đóng xảnh báo chuyển về tab đó
+            errorTab: '',
+            //Lưu ảnh
+            imageFile: "",
+            isDefaultImage: true
         }
     },
 
@@ -1225,6 +1485,7 @@ export default {
         width: 100%;
         height: 120px;
         position: relative;
+        cursor: pointer;
     }
 
     .image-container .symbol{
@@ -1381,6 +1642,24 @@ export default {
 
     .food-hobby-tab tr .input-section input:focus{
         border: 1px solid #0973b9;
+        background: #fff;
+    }
+
+    .icon-container{
+        position: absolute;
+        top: 1px;
+        right: 26px;
+        width: 20px;
+        height: calc(100% - 2px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+    }
+
+    .icon-container:hover{
+        background: #c9c9c9;
+        border: 1px solid transparent;
     }
 
     .food-hobby-tab tr .input-section .add-icon{
@@ -1397,10 +1676,7 @@ export default {
         background: url('../../assets/img/IconSprites/trigger.png') no-repeat -73px -9px;
         width: 8px;
         height: 4px;
-        position: absolute;
-        top: calc(50% - 2px);
-        right: 31px;
-        cursor: pointer;
+        pointer-events: none;
     }
 
     .food-hobby-tab .buttons-container button{

@@ -32,7 +32,8 @@
     <modal-alert
         v-if="isAlertOpened"
         :duplicateId="duplicateId"
-        :modalType="'warning'">
+        :modalType="'invalid'"
+        :warningErrorMsg="warningErrorMsg">
             <template #button-section>
                 <d-button btnText="Đồng ý" @click="closeAlert()"></d-button>
             </template>
@@ -46,6 +47,7 @@ import ComboInput from "../element/ComboInput.vue";
 import ErrMsgs from "../../js/Resources/ErrMsgs";
 import ModalAlert from "./ModalAlert.vue";
 import DButton from "../element/DButton.vue";
+import API_HEADER from "../../js/Resources/Api";
 import axios from 'axios';
 export default {
     components: {
@@ -90,6 +92,7 @@ export default {
             //nếu trùng mở cảnh báo trùng, set title và error
             if(this.checkDuplicate() === false){
                 this.isAlertOpened = true
+                this.warningErrorMsg = ErrMsgs.errMsg_FoodGroupName_Duplicate
                 this.errMsg.FoodGroupName = ErrMsgs.errMsg_FoodGroupName_Duplicate
                 this.isError.FoodGroupName = true
                 return
@@ -97,7 +100,7 @@ export default {
             //nếu dữ liệu hợp lệ để thêm
             try{
                 this.$emit('setIsLoading', true)
-                var res = await axios.post('http://localhost:5011/api/v1/FoodGroups', this.foodGroup)
+                var res = await axios.post(`${API_HEADER.Api_header}FoodGroups`, this.foodGroup)
                 if(res.status === 201){
                     this.$emit('showSuccessModal')
                 }
@@ -176,6 +179,7 @@ export default {
             checkFocus: {},
             isAlertOpened: false,
             duplicateId: "",
+            warningErrorMsg: ""
         }
     },
 
